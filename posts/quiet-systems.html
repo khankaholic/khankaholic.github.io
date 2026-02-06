@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#F6E7A1" />
+    <meta name="description" content="Building Quiet Systems - an essay by Khanh." />
+    <title>Building Quiet Systems | Khanh</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div class="scroll-progress" data-scroll-progress></div>
+
+    <div class="site-wrap">
+      <header class="site-header">
+        <a class="brand" href="/">Khanh</a>
+        <nav class="primary-nav" aria-label="Primary">
+          <a data-nav href="/">Home</a>
+          <a data-nav href="/writing.html">Writing</a>
+          <a data-nav href="/books.html">Books</a>
+          <a data-nav href="/projects.html">Projects</a>
+          <a data-nav href="/cv.html">CV</a>
+        </nav>
+      </header>
+
+      <main>
+        <article class="longform reveal">
+          <p class="eyebrow">Post · Jan 22, 2026</p>
+          <h1>Building Quiet Systems</h1>
+          <p>
+            Good software does not compete for attention. It helps users move through tasks with confidence,
+            then gets out of the way. I call this "quietness": clear behavior, stable language, and low visual
+            noise.
+          </p>
+          <h2>1. Make one thing obvious</h2>
+          <p>
+            Every page should have one dominant action. If every button looks urgent, none of them are. In my
+            projects, the first pass is deleting competing calls to action before refining style.
+          </p>
+          <h2>2. Reduce state surprises</h2>
+          <p>
+            Most frustration comes from state changes users did not expect. Keep transitions predictable: if an
+            action is destructive, pause and confirm. If a list refreshes, preserve scroll and focus.
+          </p>
+          <h2>3. Write UI copy like instructions</h2>
+          <p>
+            UI text should clarify intent and consequence. Short labels are useful only when meaning remains
+            precise. "Save draft" is stronger than "Continue" because it explains what happens.
+          </p>
+          <p>
+            Quiet systems are not plain or lifeless. They are expressive in the right moments and invisible in the
+            rest.
+          </p>
+        </article>
+      </main>
+
+      <footer>
+        <p>© <span data-year></span> Khanh. Built with plain HTML, CSS, and TypeScript.</p>
+      </footer>
+    </div>
+  </body>
+</html>

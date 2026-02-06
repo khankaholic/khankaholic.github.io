@@ -1,0 +1,15 @@
+{
+  "name": "Khanh",
+  "short_name": "Khanh",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "theme_color": "#F6E7A1",
+  "background_color": "#F6E7A1",
+  "display": "standalone"
+}

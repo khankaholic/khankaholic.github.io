@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#F6E7A1" />
+    <meta
+      name="description"
+      content="Writing archive: engineering essays and notes by Khanh."
+    />
+    <title>Writing | Khanh</title>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div class="scroll-progress" data-scroll-progress></div>
+
+    <div class="site-wrap">
+      <header class="site-header">
+        <a class="brand" href="/">Khanh</a>
+        <nav class="primary-nav" aria-label="Primary">
+          <a data-nav href="/">Home</a>
+          <a data-nav href="/writing.html">Writing</a>
+          <a data-nav href="/books.html">Books</a>
+          <a data-nav href="/projects.html">Projects</a>
+          <a data-nav href="/cv.html">CV</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="hero reveal">
+          <p class="eyebrow">Archive</p>
+          <h1>Writing</h1>
+          <p>Essays about engineering practice, learning systems, and software craftsmanship.</p>
+        </section>
+
+        <section class="block reveal">
+          <div id="writing-list" class="card-grid"></div>
+        </section>
+      </main>
+
+      <footer>
+        <p>© <span data-year></span> Khanh. Built with plain HTML, CSS, and TypeScript.</p>
+      </footer>
+    </div>
+  </body>
+</html>
