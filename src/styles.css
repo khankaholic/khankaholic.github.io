@@ -74,6 +74,21 @@ button:focus-visible {
   z-index: 70;
 }
 
+.wip-notice {
+  margin: 0.9rem 0 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 68%, #fff);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.wip-notice strong {
+  font-weight: 600;
+}
+
 header.site-header {
   display: flex;
   align-items: center;

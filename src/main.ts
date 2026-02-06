@@ -106,6 +106,20 @@ function initScrollProgress(): void {
   updateProgress();
 }
 
+function initWipNotice(): void {
+  const siteWrap = document.querySelector<HTMLElement>(".site-wrap");
+  if (!siteWrap || siteWrap.querySelector(".wip-notice")) {
+    return;
+  }
+
+  const notice = document.createElement("aside");
+  notice.className = "wip-notice";
+  notice.setAttribute("role", "note");
+  notice.innerHTML =
+    "<strong>Work in progress:</strong> this website is currently being built, and most content is placeholder for now.";
+  siteWrap.prepend(notice);
+}
+
 function createWritingCard(entry: WritingEntry): string {
   const kindLabel = entry.kind === "review" ? "Book Review" : "Post";
   const linkLabel = entry.kind === "review" ? "Read review" : "Read post";
@@ -275,6 +289,7 @@ initCurrentYear();
 initNavCurrentState();
 initRevealObserver();
 initScrollProgress();
+initWipNotice();
 renderHomeWriting();
 renderHomeBooks();
 renderWritingIndex();
