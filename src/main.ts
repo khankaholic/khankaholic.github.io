@@ -120,6 +120,39 @@ function initWipNotice(): void {
   siteWrap.prepend(notice);
 }
 
+function initAvatarToggle(): void {
+  const avatar = document.querySelector<HTMLElement>("[data-avatar]");
+  const toggle = document.querySelector<HTMLButtonElement>("[data-avatar-toggle]");
+  const caption = document.querySelector<HTMLElement>("[data-avatar-caption]");
+  if (!avatar || !toggle || !caption) {
+    return;
+  }
+
+  const storageKey = "avatar_blur_enabled";
+  const stored = window.localStorage.getItem(storageKey);
+  let isBlurred = stored === null ? true : stored === "true";
+
+  const render = (): void => {
+    avatar.classList.toggle("is-blurred", isBlurred);
+    toggle.setAttribute("aria-pressed", String(isBlurred));
+    toggle.setAttribute("aria-label", isBlurred ? "Show avatar" : "Blur avatar");
+    toggle.setAttribute("title", isBlurred ? "Show avatar" : "Blur avatar");
+    toggle.dataset.state = isBlurred ? "blurred" : "visible";
+    caption.textContent = isBlurred ? "Incognito mode: ON." : "Face reveal: unlocked.";
+  };
+
+  toggle.addEventListener("click", () => {
+    isBlurred = !isBlurred;
+    window.localStorage.setItem(storageKey, String(isBlurred));
+    toggle.classList.remove("is-pop");
+    window.requestAnimationFrame(() => toggle.classList.add("is-pop"));
+    window.setTimeout(() => toggle.classList.remove("is-pop"), 230);
+    render();
+  });
+
+  render();
+}
+
 function createWritingCard(entry: WritingEntry): string {
   const kindLabel = entry.kind === "review" ? "Book Review" : "Post";
   const linkLabel = entry.kind === "review" ? "Read review" : "Read post";
@@ -290,6 +323,7 @@ initNavCurrentState();
 initRevealObserver();
 initScrollProgress();
 initWipNotice();
+initAvatarToggle();
 renderHomeWriting();
 renderHomeBooks();
 renderWritingIndex();

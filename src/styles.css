@@ -144,13 +144,79 @@ main {
   margin-bottom: 1.9rem;
 }
 
-.intro-avatar {
+.intro-avatar-wrap {
   width: 140px;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.intro-avatar {
+  width: 100%;
   height: 140px;
   border-radius: 14px;
   border: 1px solid var(--line);
   object-fit: cover;
   background: #101214;
+  transition: filter 0.24s ease, transform 0.24s ease;
+}
+
+.intro-avatar.is-blurred {
+  filter: blur(12px) saturate(0.82);
+  transform: scale(1.015);
+}
+
+.avatar-toggle {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  width: 1.95rem;
+  height: 1.95rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  cursor: pointer;
+}
+
+.avatar-toggle svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.avatar-toggle [data-avatar-icon="hide"] {
+  display: none;
+}
+
+.avatar-toggle[data-state="visible"] [data-avatar-icon="show"] {
+  display: none;
+}
+
+.avatar-toggle[data-state="visible"] [data-avatar-icon="hide"] {
+  display: block;
+}
+
+.avatar-toggle:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: var(--accent-soft);
+}
+
+.avatar-toggle.is-pop {
+  animation: avatarTogglePop 220ms ease;
+}
+
+.avatar-caption {
+  margin: 0;
+  font-size: 0.65rem;
+  color: var(--muted);
+  line-height: 1.2;
 }
 
 .intro-body {
@@ -532,8 +598,11 @@ footer {
     gap: 0.9rem;
   }
 
-  .intro-avatar {
+  .intro-avatar-wrap {
     width: 112px;
+  }
+
+  .intro-avatar {
     height: 112px;
   }
 
@@ -554,5 +623,19 @@ footer {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes avatarTogglePop {
+  0% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.14);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
