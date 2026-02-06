@@ -60,7 +60,8 @@ Use this structure for static assets:
 
 - `public/images/profile/` for your personal photos (`me-00.jpeg`, future headshots)
 - `public/images/placeholders/` for fallback/demo images
-- `public/favicon.svg` for browser tab icon
+- `public/icons/` for browser/app icons (`favicon.ico`, png sizes, apple touch icon)
+- `public/favicon.svg` as svg fallback icon
 
 ## Notes
 

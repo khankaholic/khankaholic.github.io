@@ -3,10 +3,14 @@
   "short_name": "Khanh",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "64x64",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "/icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "theme_color": "#F6E7A1",
