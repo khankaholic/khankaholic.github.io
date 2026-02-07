@@ -79,60 +79,49 @@ export const writingEntries: WritingEntry[] = [
   }
 ];
 
-export const projectEntries: ProjectEntry[] = [
-  {
-    name: "Handbook Search",
-    summary:
-      "Internal documentation search with semantic ranking and keyboard-first navigation.",
-    stack: ["TypeScript", "Elastic", "Node"],
-    link: "#",
-    year: "2025"
-  },
-  {
-    name: "Book Notes API",
-    summary:
-      "A tiny API that stores highlights, tags, and review drafts from my reading workflow.",
-    stack: ["TypeScript", "Fastify", "PostgreSQL"],
-    link: "#",
-    year: "2024"
-  },
-  {
-    name: "Release Pulse",
-    summary:
-      "Dashboard for tracking deployment lead time, rollback rate, and PR cycle health.",
-    stack: ["TypeScript", "React", "Supabase"],
-    link: "#",
-    year: "2024"
-  }
-];
+export const projectEntries: ProjectEntry[] = [];
 
 export const experienceEntries: ExperienceEntry[] = [
   {
-    role: "Senior Software Engineer",
-    company: "Your Current Team",
-    period: "2023 - Present",
-    location: "Remote",
+    role: "AI Research Engineer",
+    company: "Employment Hero",
+    period: "Mar 2025 - Present",
+    location: "Hanoi, Vietnam",
     highlights: [
-      "Led a migration from monolith endpoints to typed service modules with measurable reliability gains.",
-      "Introduced performance budgets and cut critical page payloads by more than 35%.",
-      "Mentored three engineers through design docs and release planning."
+      "Developed an intelligent onboarding information-extraction pipeline for scanned/naive PDFs, Excel, and CSV sources.",
+      "Designed and implemented HeroAI agent workflows for KBA/policy, payroll, leave, and roster domains.",
+      "Maintained research datasets, prompt versions, tracing, and feedback loops to keep experiments consistent across the team."
     ]
   },
   {
-    role: "Software Engineer",
-    company: "Previous Company",
-    period: "2020 - 2023",
+    role: "AI Engineer / Researcher",
+    company: "Cinnamon",
+    period: "Jun 2023 - Mar 2025",
     location: "Ho Chi Minh City",
     highlights: [
-      "Built internal tooling that reduced support response time from hours to minutes.",
-      "Owned CI pipeline hardening and lowered flaky test rate by introducing deterministic fixtures."
+      "Researched and implemented document image understanding pipelines with LLMs for extraction and structured outputs.",
+      "Built dynamic few-shot extraction workflows that improved F1 by 5-15% while reducing annotation effort.",
+      "Developed asynchronous microservice AI systems that reduced 50-page processing time from ~500s to ~340s."
     ]
   },
   {
-    role: "BSc in Computer Science",
-    company: "Your University",
-    period: "2016 - 2020",
-    location: "Vietnam",
-    highlights: ["Focused on distributed systems, data structures, and practical software design."]
+    role: "AI Research Engineer",
+    company: "Rikkeisoft",
+    period: "Jan 2023 - Aug 2023",
+    location: "Hanoi, Vietnam",
+    highlights: [
+      "Trained and evaluated lightweight CV models for document image classification with 85%+ accuracy on client datasets.",
+      "Worked with YOLOv5 for object counting tasks and tuned augmentation strategies for varying daylight environments."
+    ]
+  },
+  {
+    role: "Bachelor of Data Science and AI (Very Good)",
+    company: "Hanoi University of Science and Technology (HUST)",
+    period: "2019 - 2023",
+    location: "Hanoi, Vietnam",
+    highlights: [
+      "Focused on machine learning, deep learning, NLP, and practical AI system development.",
+      "Published at PAKDD 2025: Automatic Prompt Selection for Large Language Models (arXiv:2404.02717)."
+    ]
   }
 ];

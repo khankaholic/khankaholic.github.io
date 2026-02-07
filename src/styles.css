@@ -6,8 +6,24 @@
   --line: #d7dce2;
   --accent: #0f766e;
   --accent-soft: #edf7f5;
+  --focus-ring: color-mix(in srgb, var(--accent) 65%, #ffffff);
+  --wip-bg: color-mix(in srgb, var(--accent-soft) 68%, #fff);
   --measure: 68ch;
   --reading: 66ch;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #0f1318;
+  --surface: #161c23;
+  --text: #e8edf2;
+  --muted: #a9b3bf;
+  --line: #2a3440;
+  --accent: #71c7b7;
+  --accent-soft: #1a312d;
+  --focus-ring: color-mix(in srgb, var(--accent) 62%, #6b7582);
+  --wip-bg: color-mix(in srgb, var(--accent-soft) 48%, var(--surface));
+  color-scheme: dark;
 }
 
 * {
@@ -52,7 +68,7 @@ a:hover {
 
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 65%, #ffffff);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -68,7 +84,11 @@ button:focus-visible {
   left: 0;
   height: 2px;
   width: 100%;
-  background: linear-gradient(90deg, #0f766e 0%, #0c9489 100%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--accent) 78%, #0b6d66) 0%,
+    color-mix(in srgb, var(--accent) 92%, #2ca79b) 100%
+  );
   transform-origin: 0 50%;
   transform: scaleX(0);
   z-index: 70;
@@ -77,7 +97,7 @@ button:focus-visible {
 .wip-notice {
   margin: 0.9rem 0 0;
   border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 68%, #fff);
+  background: var(--wip-bg);
   color: var(--text);
   border-radius: 8px;
   padding: 0.55rem 0.75rem;
@@ -98,7 +118,7 @@ header.site-header {
   position: static;
   z-index: 40;
   background: var(--bg);
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 88%, #fff);
+  border-bottom: 1px solid var(--line);
 }
 
 .brand {
@@ -266,7 +286,7 @@ main {
 .icon-link:hover {
   color: var(--text);
   border-color: var(--line);
-  background: var(--surface);
+  background: var(--accent-soft);
 }
 
 .icon-link[aria-label="Email"] svg {
@@ -449,9 +469,163 @@ section.block {
 
 .tag-list {
   margin-top: 0.72rem;
-  color: #3e4650;
+  color: var(--muted);
   font-family: inherit;
   font-size: 0.84rem;
+}
+
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.4rem;
+}
+
+.theme-toggle {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+}
+
+.theme-toggle svg {
+  width: 1.02rem;
+  height: 1.02rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: none;
+}
+
+.theme-toggle [data-theme-icon="light"] .sun-core {
+  fill: currentColor;
+  stroke: none;
+}
+
+.theme-toggle [data-theme-icon="light"] .sun-ring {
+  fill: none;
+  stroke: color-mix(in srgb, currentColor 68%, transparent);
+  stroke-width: 1.35;
+}
+
+.theme-toggle [data-theme-icon="light"] .sun-rays line {
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+}
+
+.theme-toggle [data-theme-icon="dark"] .moon-shape {
+  fill: currentColor;
+  stroke: none;
+}
+
+.theme-toggle [data-theme-icon="dark"] .moon-star {
+  fill: color-mix(in srgb, var(--accent) 78%, var(--text));
+  stroke: none;
+}
+
+.theme-toggle [data-theme-icon="system"] .system-screen,
+.theme-toggle [data-theme-icon="system"] .system-stand {
+  fill: none;
+  stroke: currentColor;
+}
+
+.theme-toggle [data-theme-icon="system"] .system-display {
+  fill: color-mix(in srgb, currentColor 15%, transparent);
+  stroke: color-mix(in srgb, currentColor 52%, transparent);
+  stroke-width: 1.1;
+}
+
+.theme-toggle [data-theme-icon="system"] .system-scan {
+  stroke: color-mix(in srgb, var(--accent) 72%, var(--text));
+  stroke-width: 1.55;
+  stroke-linecap: round;
+}
+
+.theme-toggle [data-theme-icon="system"] .system-dot {
+  fill: color-mix(in srgb, var(--accent) 78%, var(--text));
+  stroke: none;
+}
+
+.theme-toggle:hover[data-theme-state="light"] [data-theme-icon="light"] .sun-rays {
+  transform-origin: 12px 12px;
+  animation: sunSpin 2.3s linear infinite;
+}
+
+.theme-toggle:hover[data-theme-state="light"] [data-theme-icon="light"] .sun-core {
+  animation: sunPulse 1.1s ease-in-out infinite;
+}
+
+.theme-toggle:hover[data-theme-state="light"] [data-theme-icon="light"] .sun-ring {
+  animation: sunRingPulse 1.25s ease-in-out infinite;
+}
+
+.theme-toggle:hover[data-theme-state="dark"] [data-theme-icon="dark"] .moon-star {
+  transform-origin: 12px 12px;
+  animation: moonTwinkle 1.05s ease-in-out infinite;
+}
+
+.theme-toggle:hover[data-theme-state="dark"] [data-theme-icon="dark"] .moon-star-b {
+  animation-delay: 0.14s;
+}
+
+.theme-toggle:hover[data-theme-state="dark"] [data-theme-icon="dark"] .moon-star-c {
+  animation-delay: 0.27s;
+}
+
+.theme-toggle:hover[data-theme-state="dark"] [data-theme-icon="dark"] .moon-star-d {
+  animation-delay: 0.4s;
+}
+
+.theme-toggle:hover[data-theme-state="system"] [data-theme-icon="system"] .system-display {
+  animation: systemGlow 1.2s ease-in-out infinite;
+}
+
+.theme-toggle:hover[data-theme-state="system"] [data-theme-icon="system"] .system-scan {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: systemScan 1.1s ease-in-out infinite;
+}
+
+.theme-toggle:hover[data-theme-state="system"] [data-theme-icon="system"] .system-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: systemPulse 1.05s ease-in-out infinite;
+}
+
+.theme-toggle:hover[data-theme-state="system"] [data-theme-icon="system"] .system-dot-b {
+  animation-delay: 0.15s;
+}
+
+.theme-toggle:hover[data-theme-state="system"] [data-theme-icon="system"] .system-dot-c {
+  animation-delay: 0.3s;
+}
+
+.theme-toggle[data-theme-state="light"] [data-theme-icon="light"] {
+  display: block;
+}
+
+.theme-toggle[data-theme-state="dark"] [data-theme-icon="dark"] {
+  display: block;
+}
+
+.theme-toggle[data-theme-state="system"] [data-theme-icon="system"] {
+  display: block;
 }
 
 .chip-row {
@@ -515,6 +689,13 @@ article.longform li {
   margin: 0.42rem 0;
   line-height: 1.76;
   color: var(--text);
+}
+
+.comments-block {
+  width: min(var(--reading), 100%);
+  margin: 2.2rem auto 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
 }
 
 .timeline {
@@ -609,6 +790,14 @@ footer {
   .hero h1 {
     max-width: 20ch;
   }
+
+  nav.primary-nav {
+    gap: 0.58rem;
+  }
+
+  .theme-switch {
+    margin-left: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -637,5 +826,92 @@ footer {
 
   100% {
     transform: scale(1);
+  }
+}
+
+@keyframes moonTwinkle {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+@keyframes sunSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sunPulse {
+  0%,
+  100% {
+    transform: scale(0.95);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sunRingPulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.96);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes systemGlow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes systemScan {
+  0% {
+    opacity: 0.24;
+    transform: translateY(-1.35px);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.24;
+    transform: translateY(1.35px);
+  }
+}
+
+@keyframes systemPulse {
+  0%,
+  100% {
+    opacity: 0.52;
+    transform: scale(0.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
   }
 }
