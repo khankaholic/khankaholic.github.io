@@ -372,7 +372,6 @@ function initWipNotice(): void {
 function initPublicDashboardEmbed(): void {
   const section = document.querySelector<HTMLElement>("[data-datafast-public-dashboard]");
   const frame = section?.querySelector<HTMLIFrameElement>("[data-datafast-public-dashboard-frame]");
-  const link = section?.querySelector<HTMLAnchorElement>("[data-datafast-public-dashboard-link]");
 
   if (!section || !frame) {
     return;
@@ -384,9 +383,6 @@ function initPublicDashboardEmbed(): void {
   }
 
   frame.src = DATAFAST_PUBLIC_DASHBOARD_URL;
-  if (link) {
-    link.href = DATAFAST_PUBLIC_DASHBOARD_URL;
-  }
   frame.hidden = false;
 }
 
