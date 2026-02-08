@@ -414,6 +414,19 @@ section.block {
   font-size: 0.9rem;
 }
 
+.dashboard-note {
+  margin: -0.35rem 0 0.75rem;
+}
+
+.dashboard-frame {
+  width: 100%;
+  height: min(80vh, 760px);
+  min-height: 620px;
+  border: none;
+  border-radius: 0;
+  background: transparent !important;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -803,6 +816,11 @@ footer {
 
   .theme-switch {
     margin-left: 0;
+  }
+
+  .dashboard-frame {
+    min-height: 420px;
+    height: min(65vh, 520px);
   }
 }
 

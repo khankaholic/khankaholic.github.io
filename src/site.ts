@@ -1,4 +1,6 @@
 export const SITE_NAME = "Khanh Hoang";
+export const DATAFAST_PUBLIC_DASHBOARD_URL =
+  "https://datafa.st/share/6988a75508b2828cdde2c989?realtime=1";
 
 export interface SiteMeta {
   title: string;

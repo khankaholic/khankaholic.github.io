@@ -1,6 +1,6 @@
 import "./styles.css";
 import { experienceEntries, projectEntries, writingEntries, type WritingEntry } from "./content";
-import { DEFAULT_META, PAGE_META, SITE_NAME } from "./site";
+import { DATAFAST_PUBLIC_DASHBOARD_URL, DEFAULT_META, PAGE_META, SITE_NAME } from "./site";
 
 type ThemePreference = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -369,6 +369,27 @@ function initWipNotice(): void {
   siteWrap.prepend(notice);
 }
 
+function initPublicDashboardEmbed(): void {
+  const section = document.querySelector<HTMLElement>("[data-datafast-public-dashboard]");
+  const frame = section?.querySelector<HTMLIFrameElement>("[data-datafast-public-dashboard-frame]");
+  const link = section?.querySelector<HTMLAnchorElement>("[data-datafast-public-dashboard-link]");
+
+  if (!section || !frame) {
+    return;
+  }
+
+  if (!DATAFAST_PUBLIC_DASHBOARD_URL.trim()) {
+    section.hidden = true;
+    return;
+  }
+
+  frame.src = DATAFAST_PUBLIC_DASHBOARD_URL;
+  if (link) {
+    link.href = DATAFAST_PUBLIC_DASHBOARD_URL;
+  }
+  frame.hidden = false;
+}
+
 function initAvatarToggle(): void {
   const avatar = document.querySelector<HTMLElement>("[data-avatar]");
   const toggle = document.querySelector<HTMLButtonElement>("[data-avatar-toggle]");
@@ -578,6 +599,7 @@ initNavCurrentState();
 initRevealObserver();
 initScrollProgress();
 initWipNotice();
+initPublicDashboardEmbed();
 initAvatarToggle();
 renderHomeWriting();
 renderHomeBooks();
