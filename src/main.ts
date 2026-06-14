@@ -17,7 +17,7 @@ const themeColorLight = "#fdfbf7";
 const themeColorDark = "#151412";
 
 let revealObserver: IntersectionObserver | null = null;
-let currentThemePreference: ThemePreference = "system";
+let currentThemePreference: ThemePreference = "light";
 let systemThemeMediaQuery: MediaQueryList | null = null;
 
 function formatDate(date: string): string {
@@ -77,7 +77,7 @@ function normalizeThemePreference(value: string | null): ThemePreference {
   if (value === "light" || value === "dark" || value === "system") {
     return value;
   }
-  return "system";
+  return "light";
 }
 
 function resolveTheme(preference: ThemePreference): ResolvedTheme {
