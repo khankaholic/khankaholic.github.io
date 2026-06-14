@@ -1066,10 +1066,22 @@ article.longform li {
 }
 
 .visitor-globe-widget {
+  position: relative;
   justify-self: end;
   width: min(18rem, 100%);
   min-height: 11rem;
   overflow: hidden;
+}
+
+.visitor-globe-link {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+}
+
+.visitor-globe-link:focus-visible {
+  outline-offset: -2px;
 }
 
 .visitor-globe-widget iframe,
