@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-This is a personal website built with Vite, plain HTML, CSS, and TypeScript. Top-level HTML files (`index.html`, `writing.html`, `books.html`, `projects.html`, `cv.html`) define page structure. Long-form content lives in `posts/` and `reviews/`. Shared TypeScript is in `src/`: `main.ts` handles browser behavior, `content.ts` stores writing/project/CV data, `site.ts` stores site metadata, and `styles.css` contains global styling. Static assets belong in `public/`, with profile images in `public/images/profile/`, placeholders in `public/images/placeholders/`, and icons/manifest files in `public/icons/` and `public/`.
+This is a Vite site built with plain HTML, CSS, and TypeScript. Top-level HTML files (`index.html`, `writing.html`, `books.html`, `projects.html`, `cv.html`) define page structure. Long-form articles live in `posts/` and `reviews/` as `article.longform` pages. Shared TypeScript is in `src/`: `main.ts` bootstraps behavior, `content.ts` stores writing/project/CV data, `longform.ts` handles article TOC/navigation/comments, `longform-meta.ts` syncs article metadata, and `article-markdown*.ts` powers copy/open-Markdown actions. Global styling is in `src/styles.css`; static assets belong in `public/`.
 
 ## Build, Test, and Development Commands
 
@@ -15,15 +15,19 @@ Run commands from the repository root.
 
 ## Coding Style & Naming Conventions
 
-Use strict TypeScript and keep code browser-native unless a dependency is already justified. The project uses ES modules, two-space indentation in JSON, and TypeScript files with explicit types for exported content models. Prefer `const` by default, small functions, and descriptive data names such as `writingEntries` or `projectEntries`. Keep page filenames lowercase and URL-oriented, for example `posts/quiet-systems.html`. Store reusable content in `src/content.ts` rather than duplicating card markup across pages.
+Use strict TypeScript and keep code browser-native unless a dependency is justified. The project uses ES modules, two-space indentation in JSON, and typed exported content models. Prefer `const`, small functions, and descriptive data names such as `writingEntries`. Keep page filenames lowercase and URL-oriented, for example `posts/quiet-systems.html`. Store reusable content and reading times in `src/content.ts`; article pages should sync from that source.
 
 ## Testing Guidelines
 
-There is no dedicated test framework configured. Treat `npm run build` as the required validation step because it enforces the strict `tsconfig.json` rules and verifies the Vite build. For UI/content changes, also run `npm run dev` and manually check the affected pages in a browser. If adding a test framework later, document its command here and keep tests close to the behavior they cover.
+There is no dedicated test framework configured. Treat `npm run build` as required validation because it enforces `tsconfig.json` and verifies the Vite build. For UI/content changes, also run `npm run dev` and check affected pages in a browser. For long-form changes, verify TOC links, previous/next links, comments loading, article reading time, and the copy/open-Markdown menu.
+
+## Content & Configuration Notes
+
+Article TOCs are generated from `h2`/`h3` headings, so use descriptive headings and avoid skipping levels. The home visitor globe is an external script in `index.html`; do not move it onto article pages unless requested. Favicon assets come from `public/favicon-source.jpg`; update generated icons, `favicon.svg`, and `site.webmanifest` together.
 
 ## Commit & Pull Request Guidelines
 
-Recent history uses short conventional-style prefixes such as `chore:`, `feat:`, and `ci:`. Follow that pattern with an imperative, specific subject, for example `feat: add books page filters` or `chore: update profile image`. Pull requests should include a brief summary, affected pages or files, validation performed (`npm run build`, browser checks), and screenshots for visible UI changes. Link related issues when available.
+Recent history uses short prefixes such as `chore:`, `feat:`, and `ci:`. Follow that pattern with an imperative, specific subject, for example `feat: add books page filters`. Pull requests should include a summary, affected pages/files, validation performed (`npm run build`, browser checks), and screenshots for visible UI changes.
 
 ## Deployment Notes
 
