@@ -1,5 +1,6 @@
 import "./styles.css";
 import { experienceEntries, projectEntries, writingEntries, type WritingEntry } from "./content";
+import { initLongform, syncLongformCommentsThemeWhenReady } from "./longform";
 import { DEFAULT_META, PAGE_META, SITE_NAME } from "./site";
 
 type ThemePreference = "light" | "dark" | "system";
@@ -12,8 +13,8 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 const themeStorageKey = "theme_preference";
-const themeColorLight = "#F6E7A1";
-const themeColorDark = "#141a20";
+const themeColorLight = "#fdfbf7";
+const themeColorDark = "#151412";
 
 let revealObserver: IntersectionObserver | null = null;
 let currentThemePreference: ThemePreference = "system";
@@ -120,34 +121,12 @@ function updateThemeControlState(): void {
   toggle.setAttribute("title", `Theme: ${currentThemePreference} (${resolved}). Click for ${next}.`);
 }
 
-function syncGiscusTheme(): void {
-  const frame = document.querySelector<HTMLIFrameElement>("iframe.giscus-frame");
-  if (!frame?.contentWindow) {
-    return;
-  }
-
-  frame.contentWindow.postMessage(
-    {
-      giscus: {
-        setConfig: {
-          theme: getGiscusTheme()
-        }
-      }
-    },
-    "https://giscus.app"
-  );
-}
-
 function getGiscusTheme(): "light" | "dark_dimmed" {
   return getCurrentResolvedTheme() === "dark" ? "dark_dimmed" : "light";
 }
 
 function syncGiscusThemeWhenReady(attempt = 0): void {
-  syncGiscusTheme();
-  if (attempt >= 8 || document.querySelector("iframe.giscus-frame")) {
-    return;
-  }
-  window.setTimeout(() => syncGiscusThemeWhenReady(attempt + 1), 350);
+  syncLongformCommentsThemeWhenReady(getGiscusTheme, attempt);
 }
 
 function setThemePreference(preference: ThemePreference, shouldPersist = true): void {
@@ -208,17 +187,16 @@ function initThemeSwitcher(): void {
   button.setAttribute("aria-live", "polite");
   button.innerHTML = `
     <svg data-theme-icon="light" viewBox="0 0 24 24" aria-hidden="true">
-      <circle class="sun-core" cx="12" cy="12" r="3.45" />
-      <circle class="sun-ring" cx="12" cy="12" r="6.15" />
+      <circle class="sun-core" cx="12" cy="12" r="4.15" />
       <g class="sun-rays">
-        <line x1="12" y1="1.5" x2="12" y2="4.3" />
-        <line x1="12" y1="19.7" x2="12" y2="22.5" />
-        <line x1="1.5" y1="12" x2="4.3" y2="12" />
-        <line x1="19.7" y1="12" x2="22.5" y2="12" />
-        <line x1="4.5" y1="4.5" x2="6.6" y2="6.6" />
-        <line x1="17.4" y1="17.4" x2="19.5" y2="19.5" />
-        <line x1="17.4" y1="6.6" x2="19.5" y2="4.5" />
-        <line x1="4.5" y1="19.5" x2="6.6" y2="17.4" />
+        <line x1="12" y1="2" x2="12" y2="4.1" />
+        <line x1="12" y1="19.9" x2="12" y2="22" />
+        <line x1="2" y1="12" x2="4.1" y2="12" />
+        <line x1="19.9" y1="12" x2="22" y2="12" />
+        <line x1="4.9" y1="4.9" x2="6.4" y2="6.4" />
+        <line x1="17.6" y1="17.6" x2="19.1" y2="19.1" />
+        <line x1="17.6" y1="6.4" x2="19.1" y2="4.9" />
+        <line x1="4.9" y1="19.1" x2="6.4" y2="17.6" />
       </g>
     </svg>
     <svg data-theme-icon="dark" viewBox="0 0 24 24" aria-hidden="true">
@@ -245,36 +223,6 @@ function initThemeSwitcher(): void {
 
   nav.append(switcher);
   updateThemeControlState();
-}
-
-function initComments(): void {
-  const target = document.querySelector<HTMLElement>("[data-comments]");
-  if (!target || target.dataset.loaded === "true") {
-    return;
-  }
-
-  const script = document.createElement("script");
-  script.src = "https://giscus.app/client.js";
-  script.async = true;
-  script.crossOrigin = "anonymous";
-
-  script.setAttribute("data-repo", "khankaholic/khankaholic.github.io");
-  script.setAttribute("data-repo-id", "R_kgDORKH1ng");
-  script.setAttribute("data-category", "General");
-  script.setAttribute("data-category-id", "DIC_kwDORKH1ns4C2AlT");
-  script.setAttribute("data-mapping", "pathname");
-  script.setAttribute("data-strict", "0");
-  script.setAttribute("data-reactions-enabled", "1");
-  script.setAttribute("data-emit-metadata", "0");
-  script.setAttribute("data-input-position", "top");
-  script.setAttribute("data-theme", getGiscusTheme());
-  script.setAttribute("data-lang", "en");
-  script.addEventListener("load", () => {
-    syncGiscusThemeWhenReady();
-  });
-
-  target.append(script);
-  target.dataset.loaded = "true";
 }
 
 function initNavCurrentState(): void {
@@ -388,7 +336,7 @@ function initAvatarToggle(): void {
     toggle.setAttribute("aria-label", isBlurred ? "Show avatar" : "Blur avatar");
     toggle.setAttribute("title", isBlurred ? "Show avatar" : "Blur avatar");
     toggle.dataset.state = isBlurred ? "blurred" : "visible";
-    caption.textContent = isBlurred ? "Incognito mode: ON." : "Face reveal: unlocked.";
+    caption.textContent = isBlurred ? "Incognito mode: ON." : "Face unlocked. Be nice.";
   };
 
   toggle.addEventListener("click", () => {
@@ -407,12 +355,15 @@ function createWritingCard(entry: WritingEntry): string {
   const kindLabel = entry.kind === "review" ? "Book Review" : "Post";
   const linkLabel = entry.kind === "review" ? "Read review" : "Read post";
   const isDraft = entry.url === "#";
+  const content = `
+      <h3>${entry.title}</h3>
+      <p>${entry.excerpt}</p>
+  `;
 
   return `
     <article class="card reveal">
       <p class="eyebrow">${kindLabel} · ${entry.readingTime}</p>
-      <h3>${entry.title}</h3>
-      <p>${entry.excerpt}</p>
+      ${isDraft ? content : `<a class="card-main-link" href="${entry.url}">${content}</a>`}
       <div class="meta-row">
         <span>${formatDate(entry.date)}</span>
         <span>${entry.tag}</span>
@@ -574,7 +525,11 @@ initThemeSwitcher();
 initSiteBrand();
 initPageMeta();
 initExternalLinks();
-initComments();
+initLongform({
+  entries: writingEntries,
+  getCommentTheme: getGiscusTheme,
+  onCommentsReady: syncGiscusThemeWhenReady
+});
 initNavCurrentState();
 initRevealObserver();
 initScrollProgress();
