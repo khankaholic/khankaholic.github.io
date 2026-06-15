@@ -22,7 +22,7 @@ export function initLongform(options: LongformOptions): void {
     return;
   }
 
-  syncLongformMeta(article, options.entries);
+  syncLongformMeta(article);
   initTableOfContents(article);
   initArticleMarkdownActions(article);
   initArticleNavigation(article, options.entries);

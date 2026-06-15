@@ -1,7 +1,9 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
+import { sharedLayoutPlugin } from "./src/layout";
 
 export default defineConfig({
+  plugins: [sharedLayoutPlugin()],
   build: {
     rollupOptions: {
       input: {

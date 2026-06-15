@@ -1,29 +1,29 @@
 export type WritingKind = "post" | "review";
 
 export interface WritingEntry {
-  title: string;
-  excerpt: string;
-  date: string;
-  kind: WritingKind;
-  url: string;
-  tag: string;
-  readingTime: string;
+  readonly title: string;
+  readonly excerpt: string;
+  readonly date: string;
+  readonly kind: WritingKind;
+  readonly url: string;
+  readonly tag: string;
+  readonly readingTime?: string;
 }
 
 export interface ProjectEntry {
-  name: string;
-  summary: string;
-  stack: string[];
-  link: string;
-  year: string;
+  readonly name: string;
+  readonly summary: string;
+  readonly stack: readonly string[];
+  readonly link: string;
+  readonly year: string;
 }
 
 export interface ExperienceEntry {
-  role: string;
-  company: string;
-  period: string;
-  location: string;
-  highlights: string[];
+  readonly role: string;
+  readonly company: string;
+  readonly period: string;
+  readonly location: string;
+  readonly highlights: readonly string[];
 }
 
 export const writingEntries: WritingEntry[] = [
@@ -34,8 +34,7 @@ export const writingEntries: WritingEntry[] = [
     date: "2026-01-22",
     kind: "post",
     url: "/posts/quiet-systems.html",
-    tag: "Writing",
-    readingTime: "6 min"
+    tag: "Writing"
   },
   {
     title: "Deep Work Notes for Engineers",
@@ -44,8 +43,7 @@ export const writingEntries: WritingEntry[] = [
     date: "2025-12-10",
     kind: "post",
     url: "/posts/deep-work-notes.html",
-    tag: "Career",
-    readingTime: "7 min"
+    tag: "Career"
   },
   {
     title: "Atomic Habits: What Actually Stuck",
@@ -54,8 +52,7 @@ export const writingEntries: WritingEntry[] = [
     date: "2025-11-15",
     kind: "review",
     url: "/reviews/atomic-habits-notes.html",
-    tag: "Book Review",
-    readingTime: "5 min"
+    tag: "Book Review"
   },
   {
     title: "Learning in Public Without Burning Out",

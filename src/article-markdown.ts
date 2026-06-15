@@ -1,17 +1,28 @@
 import { createArticleMarkdown } from "./article-markdown-content";
+import {
+  assistantActions,
+  openAssistant,
+  type AssistantId
+} from "./assistant-links";
+import { assistantIcon, checkIcon, chevronIcon, copyIcon, externalArrow, markdownIcon } from "./article-action-icons";
 
 interface MarkdownActionElements {
   readonly root: HTMLElement;
   readonly mainButton: HTMLButtonElement;
   readonly chevronButton: HTMLButtonElement;
   readonly label: HTMLElement;
+  readonly menuCopyButton: HTMLButtonElement;
+  readonly menuCopyLabel: HTMLElement;
   readonly menu: HTMLElement;
   readonly status: HTMLElement;
 }
 
 const markdownMimeType = "text/markdown;charset=utf-8";
 const defaultCopyLabel = "Copy page";
+const defaultMenuCopyLabel = "Copy page";
 let copyStatusSequence = 0;
+
+type MarkdownAction = "copy" | "open" | AssistantId;
 
 export function initArticleMarkdownActions(article: HTMLElement): void {
   if (article.querySelector(".article-actions")) {
@@ -68,14 +79,9 @@ function createActions(): MarkdownActionElements {
       ${chevronIcon()}
     </button>
     <div class="article-copy-menu" role="menu">
-      <button type="button" role="menuitem" data-markdown-action="copy">
-        ${copyIcon()}
-        <span>Copy page as Markdown</span>
-      </button>
-      <button type="button" role="menuitem" data-markdown-action="open">
-        <span class="article-copy-open-icon" aria-hidden="true">↗</span>
-        <span>Open Markdown</span>
-      </button>
+      ${renderMenuButton("copy", copyIcon(), "Copy page as Markdown for LLMs", defaultMenuCopyLabel)}
+      ${renderMenuButton("open", markdownIcon(), "View this page as plain text", "View as Markdown", externalArrow())}
+      ${assistantActions.map((action) => renderAssistantButton(action.id, action.label, action.description)).join("")}
     </div>
     <p class="article-copy-status" aria-live="polite"></p>
   `;
@@ -85,9 +91,21 @@ function createActions(): MarkdownActionElements {
   const label = root.querySelector<HTMLElement>(".article-copy-label");
   const copyIconElement = root.querySelector<HTMLElement>(".article-copy-icon");
   const checkIconElement = root.querySelector<HTMLElement>(".article-check-icon");
+  const menuCopyButton = root.querySelector<HTMLButtonElement>('[data-markdown-action="copy"]');
+  const menuCopyLabel = root.querySelector<HTMLElement>(".article-copy-menu-label");
   const menu = root.querySelector<HTMLElement>(".article-copy-menu");
   const status = root.querySelector<HTMLElement>(".article-copy-status");
-  if (!mainButton || !chevronButton || !label || !copyIconElement || !checkIconElement || !menu || !status) {
+  if (
+    !mainButton ||
+    !chevronButton ||
+    !label ||
+    !copyIconElement ||
+    !checkIconElement ||
+    !menuCopyButton ||
+    !menuCopyLabel ||
+    !menu ||
+    !status
+  ) {
     throw new ArticleMarkdownInitError("Article markdown controls failed to render.");
   }
 
@@ -96,6 +114,8 @@ function createActions(): MarkdownActionElements {
     mainButton,
     chevronButton,
     label,
+    menuCopyButton,
+    menuCopyLabel,
     menu,
     status
   };
@@ -108,12 +128,15 @@ function handleMenuClick(event: MouseEvent, article: HTMLElement, actions: Markd
   }
 
   const markdown = createArticleMarkdown(article);
-  const action = button.dataset.markdownAction;
+  const action = parseMarkdownAction(button.dataset.markdownAction);
   if (action === "copy") {
     copyMarkdown(markdown, actions);
   } else if (action === "open") {
     openMarkdown(markdown);
     setStatus(actions, "Opened Markdown.");
+  } else if (action) {
+    openAssistant(action);
+    setStatus(actions, "Opened assistant.");
   }
   setMenuOpen(actions, false);
 }
@@ -146,8 +169,9 @@ function beginCopyStatus(actions: MarkdownActionElements): number {
   const token = copyStatusSequence;
   actions.root.dataset.copyStatusToken = String(token);
   actions.mainButton.setAttribute("aria-busy", "true");
+  actions.menuCopyButton.setAttribute("aria-busy", "true");
   actions.root.classList.remove("is-copied");
-  setCopyLabel(actions, "Copying...", "Copying page as Markdown.");
+  setCopyLabel(actions, "Copying...", "Copying...", "Copying page as Markdown.");
   return token;
 }
 
@@ -162,8 +186,9 @@ function completeCopyStatus(
   }
 
   actions.mainButton.removeAttribute("aria-busy");
+  actions.menuCopyButton.removeAttribute("aria-busy");
   actions.root.classList.toggle("is-copied", label === "Copied!");
-  setCopyLabel(actions, label, announcement);
+  setCopyLabel(actions, label, label, announcement);
   window.setTimeout(() => resetCopyStatus(actions, token), 2_000);
 }
 
@@ -173,13 +198,22 @@ function resetCopyStatus(actions: MarkdownActionElements, token: number): void {
   }
 
   actions.label.textContent = defaultCopyLabel;
+  actions.menuCopyLabel.textContent = defaultMenuCopyLabel;
+  actions.mainButton.removeAttribute("aria-busy");
+  actions.menuCopyButton.removeAttribute("aria-busy");
   actions.status.textContent = "";
   actions.root.classList.remove("is-copied");
   delete actions.root.dataset.copyStatusToken;
 }
 
-function setCopyLabel(actions: MarkdownActionElements, label: string, announcement: string): void {
-  actions.label.textContent = label;
+function setCopyLabel(
+  actions: MarkdownActionElements,
+  mainLabel: string,
+  menuLabel: string,
+  announcement: string
+): void {
+  actions.label.textContent = mainLabel;
+  actions.menuCopyLabel.textContent = menuLabel;
   actions.status.textContent = announcement;
 }
 
@@ -192,29 +226,41 @@ function setStatus(actions: MarkdownActionElements, message: string): void {
   }, 2_400);
 }
 
-function copyIcon(): string {
-  return `
-    <svg class="article-copy-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="8" y="8" width="11" height="11" rx="1.4"></rect>
-      <path d="M5 16V5h11"></path>
-    </svg>
-  `;
+function parseMarkdownAction(value: string | undefined): MarkdownAction | undefined {
+  switch (value) {
+    case "copy":
+    case "open":
+    case "claude":
+    case "chatgpt":
+      return value;
+    default:
+      return undefined;
+  }
 }
 
-function checkIcon(): string {
-  return `
-    <svg class="article-check-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m5 12 4 4 10-10"></path>
-    </svg>
-  `;
+function renderAssistantButton(id: AssistantId, label: string, description: string): string {
+  return renderMenuButton(id, assistantIcon(id), description, label, externalArrow());
 }
 
-function chevronIcon(): string {
+function renderMenuButton(
+  action: MarkdownAction,
+  icon: string,
+  description: string,
+  title: string,
+  titleSuffix = ""
+): string {
+  const labelClass = action === "copy" ? "article-copy-menu-title article-copy-menu-label" : "article-copy-menu-title";
+
   return `
-    <svg class="article-copy-chevron" viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m6 9 6 6 6-6"></path>
-    </svg>
-  `;
+      <button type="button" role="menuitem" data-markdown-action="${action}">
+        <span class="article-copy-menu-icon" aria-hidden="true">${icon}</span>
+        <span class="article-copy-menu-text">
+          <span class="article-copy-menu-title-row">
+            <span class="${labelClass}">${title}</span>${titleSuffix}
+          </span>
+          <span class="article-copy-menu-description">${description}</span>
+        </span>
+      </button>`;
 }
 
 class ArticleMarkdownInitError extends Error {

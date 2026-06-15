@@ -1,30 +1,17 @@
-import type { WritingEntry } from "./content";
+import { calculateArticleReadingTime } from "./reading-time";
 
 const trailingReadingTimePattern = /\s*·\s*\d+\s+min(?:\s+read)?\s*$/i;
 
-export function syncLongformMeta(article: HTMLElement, entries: readonly WritingEntry[]): void {
-  const entry = findCurrentEntry(entries);
+export function syncLongformMeta(article: HTMLElement): void {
   const eyebrow = article.querySelector<HTMLElement>(".eyebrow");
-  if (!entry || !eyebrow) {
+  if (!eyebrow) {
     return;
   }
 
-  eyebrow.textContent = appendReadingTime(eyebrow.textContent ?? "", entry.readingTime);
-}
-
-function findCurrentEntry(entries: readonly WritingEntry[]): WritingEntry | undefined {
-  const currentPath = normalizePath(window.location.pathname);
-  return entries.find((entry) => entry.url !== "#" && normalizePath(entry.url) === currentPath);
+  eyebrow.textContent = appendReadingTime(eyebrow.textContent ?? "", calculateArticleReadingTime(article));
 }
 
 function appendReadingTime(value: string, readingTime: string): string {
   const baseValue = value.replace(trailingReadingTimePattern, "").trim();
   return `${baseValue} · ${readingTime}`;
-}
-
-function normalizePath(path: string): string {
-  if (path === "/") {
-    return "/";
-  }
-  return path.replace(/\/+$/, "");
 }

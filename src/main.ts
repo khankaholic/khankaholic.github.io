@@ -1,16 +1,11 @@
 import "./styles.css";
-import { experienceEntries, projectEntries, writingEntries, type WritingEntry } from "./content";
+import { experienceEntries, projectEntries, writingEntries } from "./content";
 import { initLongform, syncLongformCommentsThemeWhenReady } from "./longform";
 import { DEFAULT_META, PAGE_META, SITE_NAME } from "./site";
+import { renderBooksIndex, renderHomeBooks, renderHomeWriting, renderWritingIndex } from "./writing-cards";
 
 type ThemePreference = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric"
-});
 
 const themeStorageKey = "theme_preference";
 const themeColorLight = "#fdfbf7";
@@ -19,18 +14,6 @@ const themeColorDark = "#151412";
 let revealObserver: IntersectionObserver | null = null;
 let currentThemePreference: ThemePreference = "light";
 let systemThemeMediaQuery: MediaQueryList | null = null;
-
-function formatDate(date: string): string {
-  return dateFormatter.format(new Date(`${date}T00:00:00`));
-}
-
-function byNewest(a: WritingEntry, b: WritingEntry): number {
-  return new Date(b.date).getTime() - new Date(a.date).getTime();
-}
-
-function sortedByNewest(entries: WritingEntry[]): WritingEntry[] {
-  return [...entries].sort(byNewest);
-}
 
 function initCurrentYear(): void {
   const target = document.querySelector<HTMLElement>("[data-year]");
@@ -67,8 +50,11 @@ function initExternalLinks(): void {
         link.setAttribute("target", "_blank");
         link.setAttribute("rel", "noopener noreferrer");
       }
-    } catch {
-      // Ignore malformed URLs.
+    } catch (error) {
+      if (error instanceof TypeError) {
+        return;
+      }
+      throw error;
     }
   });
 }
@@ -351,101 +337,6 @@ function initAvatarToggle(): void {
   render();
 }
 
-function createWritingCard(entry: WritingEntry): string {
-  const kindLabel = entry.kind === "review" ? "Book Review" : "Post";
-  const linkLabel = entry.kind === "review" ? "Read review" : "Read post";
-  const isDraft = entry.url === "#";
-  const content = `
-      <h3>${entry.title}</h3>
-      <p>${entry.excerpt}</p>
-  `;
-
-  return `
-    <article class="card reveal">
-      <p class="eyebrow">${kindLabel} · ${entry.readingTime}</p>
-      ${isDraft ? content : `<a class="card-main-link" href="${entry.url}">${content}</a>`}
-      <div class="meta-row">
-        <span>${formatDate(entry.date)}</span>
-        <span>${entry.tag}</span>
-      </div>
-      ${isDraft ? '<span class="inline-note">Draft in progress</span>' : `<a href="${entry.url}">${linkLabel}</a>`}
-    </article>
-  `;
-}
-
-function renderHomeWriting(): void {
-  const container = document.querySelector<HTMLElement>("#home-writing");
-  if (!container) {
-    return;
-  }
-
-  const latest = sortedByNewest(writingEntries.filter((entry) => entry.kind === "post")).slice(0, 3);
-  container.innerHTML = latest.map(createWritingCard).join("");
-  observePendingReveals();
-}
-
-function renderHomeBooks(): void {
-  const container = document.querySelector<HTMLElement>("#home-books");
-  if (!container) {
-    return;
-  }
-
-  const latest = sortedByNewest(writingEntries.filter((entry) => entry.kind === "review")).slice(0, 2);
-  container.innerHTML = latest.map(createWritingCard).join("");
-  observePendingReveals();
-}
-
-function renderWritingIndex(): void {
-  const container = document.querySelector<HTMLElement>("#writing-list");
-  const filterControls = document.querySelectorAll<HTMLButtonElement>("[data-writing-filter]");
-  if (!container) {
-    return;
-  }
-
-  if (filterControls.length === 0) {
-    const posts = sortedByNewest(writingEntries.filter((entry) => entry.kind === "post"));
-    container.innerHTML = posts.map(createWritingCard).join("");
-    observePendingReveals();
-    return;
-  }
-
-  const render = (filter: "all" | "post" | "review"): void => {
-    const selected =
-      filter === "all"
-        ? sortedByNewest(writingEntries)
-        : sortedByNewest(writingEntries.filter((entry) => entry.kind === filter));
-
-    container.innerHTML = selected.map(createWritingCard).join("");
-    observePendingReveals();
-  };
-
-  filterControls.forEach((button) => {
-    button.addEventListener("click", () => {
-      const filter = button.dataset.writingFilter as "all" | "post" | "review";
-      filterControls.forEach((control) => {
-        control.classList.remove("is-active");
-        control.setAttribute("aria-selected", "false");
-      });
-      button.classList.add("is-active");
-      button.setAttribute("aria-selected", "true");
-      render(filter);
-    });
-  });
-
-  render("all");
-}
-
-function renderBooksIndex(): void {
-  const container = document.querySelector<HTMLElement>("#books-list");
-  if (!container) {
-    return;
-  }
-
-  const reviews = sortedByNewest(writingEntries.filter((entry) => entry.kind === "review"));
-  container.innerHTML = reviews.map(createWritingCard).join("");
-  observePendingReveals();
-}
-
 function renderHomeProjects(): void {
   const container = document.querySelector<HTMLElement>("#home-projects");
   if (!container) {
@@ -535,10 +426,10 @@ initRevealObserver();
 initScrollProgress();
 initWipNotice();
 initAvatarToggle();
-renderHomeWriting();
-renderHomeBooks();
-renderWritingIndex();
-renderBooksIndex();
+renderHomeWriting(observePendingReveals);
+renderHomeBooks(observePendingReveals);
+renderWritingIndex(observePendingReveals);
+renderBooksIndex(observePendingReveals);
 renderHomeProjects();
 renderProjectsIndex();
 renderExperience();

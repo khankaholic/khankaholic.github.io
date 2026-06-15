@@ -752,6 +752,10 @@ article.longform {
   color: var(--accent-ink);
 }
 
+.article-actions.is-copied [data-markdown-action="copy"] {
+  color: var(--accent-ink);
+}
+
 .article-copy-main svg,
 .article-copy-menu svg {
   width: 0.9rem;
@@ -763,12 +767,44 @@ article.longform {
   stroke-linejoin: round;
 }
 
+.article-copy-main .article-copy-icon,
+.article-copy-main .article-check-icon {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+[data-markdown-action="copy"] .article-copy-icon,
+[data-markdown-action="copy"] .article-check-icon,
+.article-copy-menu .article-markdown-icon,
+.article-copy-menu .ai-menu-icon {
+  display: inline-block;
+  width: 1.08rem;
+  height: 1.08rem;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+.article-copy-menu .article-markdown-icon,
+.article-copy-menu .ai-menu-icon {
+  fill: currentColor;
+  stroke: none;
+  stroke-width: 0;
+}
+
+.article-copy-menu .ai-menu-icon-claude,
+.article-copy-menu .ai-menu-icon-openai {
+  color: var(--muted);
+}
+
 .article-check-icon,
-.article-actions.is-copied .article-copy-icon {
+.article-actions.is-copied .article-copy-main .article-copy-icon {
   display: none;
 }
 
-.article-actions.is-copied .article-check-icon {
+.article-actions.is-copied .article-copy-main .article-check-icon {
   display: block;
 }
 
@@ -783,14 +819,23 @@ article.longform {
   stroke-linejoin: round;
 }
 
+.article-copy-chevron-up,
+.article-actions.is-open .article-copy-chevron-down {
+  display: none;
+}
+
+.article-actions.is-open .article-copy-chevron-up {
+  display: block;
+}
+
 .article-copy-menu {
   position: absolute;
   top: 100%;
   right: 0;
-  width: min(13.5rem, calc(100vw - 2rem));
+  width: min(17.2rem, calc(100vw - 2rem));
   display: none;
   margin-top: 0.45rem;
-  padding: 0.35rem;
+  padding: 0.42rem;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--bg);
@@ -803,20 +848,74 @@ article.longform {
 
 .article-copy-menu button {
   display: grid;
-  grid-template-columns: 1rem minmax(0, 1fr);
-  gap: 0.58rem;
-  align-items: center;
+  grid-template-columns: 1.9rem minmax(0, 1fr);
+  gap: 0.62rem;
+  align-items: start;
   width: 100%;
-  padding: 0.62rem 0.65rem;
+  padding: 0.55rem 0.58rem;
   border: 0;
   border-radius: 5px;
   background: transparent;
   color: var(--muted);
   font: inherit;
-  font-size: 0.75rem;
-  line-height: 1.35;
   text-align: left;
   cursor: pointer;
+}
+
+.article-copy-menu-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+  background: var(--surface);
+}
+
+.article-copy-menu-icon .article-check-icon {
+  position: absolute;
+}
+
+.article-copy-menu-text {
+  display: grid;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.article-copy-menu-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  min-width: 0;
+}
+
+.article-copy-menu-title {
+  color: var(--text);
+  font-size: 0.8rem;
+  line-height: 1.22;
+  white-space: nowrap;
+}
+
+.article-copy-menu-label {
+  white-space: nowrap;
+}
+
+.article-copy-menu-description {
+  color: var(--soft);
+  font-size: 0.68rem;
+  line-height: 1.24;
+}
+
+.article-copy-external {
+  display: inline-block;
+  width: 0.68rem;
+  height: 0.68rem;
+  color: var(--muted);
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .article-copy-menu button:hover,
@@ -825,10 +924,26 @@ article.longform {
   background: var(--surface);
 }
 
-.article-copy-open-icon {
-  color: currentColor;
-  font-size: 1rem;
-  line-height: 1;
+.article-copy-menu button:hover .article-copy-menu-icon,
+.article-copy-menu button:focus-visible .article-copy-menu-icon {
+  color: var(--text);
+  border-color: var(--soft);
+}
+
+.article-copy-menu button:hover .article-copy-icon,
+.article-copy-menu button:focus-visible .article-copy-icon,
+.article-copy-menu button:hover .article-markdown-icon,
+.article-copy-menu button:focus-visible .article-markdown-icon,
+.article-copy-menu button:hover .ai-menu-icon,
+.article-copy-menu button:focus-visible .ai-menu-icon {
+  opacity: 0.95;
+  transform: scale(1.06);
+}
+
+.article-copy-menu button:hover .article-copy-external,
+.article-copy-menu button:focus-visible .article-copy-external {
+  color: var(--text);
+  transform: translate(1px, -1px);
 }
 
 .article-copy-status {
