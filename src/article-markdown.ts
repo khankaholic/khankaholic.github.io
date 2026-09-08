@@ -4,13 +4,12 @@ import {
   openAssistant,
   type AssistantId
 } from "./assistant-links";
-import { assistantIcon, checkIcon, chevronIcon, copyIcon, externalArrow, markdownIcon } from "./article-action-icons";
+import { assistantIcon, chevronIcon, copyIcon, externalArrow, markdownIcon } from "./article-action-icons";
 
 interface MarkdownActionElements {
   readonly root: HTMLElement;
   readonly mainButton: HTMLButtonElement;
   readonly chevronButton: HTMLButtonElement;
-  readonly label: HTMLElement;
   readonly menuCopyButton: HTMLButtonElement;
   readonly menuCopyLabel: HTMLElement;
   readonly menu: HTMLElement;
@@ -18,7 +17,7 @@ interface MarkdownActionElements {
 }
 
 const markdownMimeType = "text/markdown;charset=utf-8";
-const defaultCopyLabel = "Copy page";
+const defaultCopyLabel = "Ask AI";
 const defaultMenuCopyLabel = "Copy page";
 let copyStatusSequence = 0;
 
@@ -31,7 +30,10 @@ export function initArticleMarkdownActions(article: HTMLElement): void {
 
   const actions = createActions();
   placeActions(article, actions.root);
-  actions.mainButton.addEventListener("click", () => copyMarkdown(createArticleMarkdown(article), actions));
+  actions.mainButton.addEventListener("click", () => {
+    openAssistant("chatgpt");
+    setStatus(actions, "Opened ChatGPT.");
+  });
   actions.chevronButton.addEventListener("click", () => {
     setMenuOpen(actions, !actions.root.classList.contains("is-open"));
   });
@@ -70,12 +72,11 @@ function createActions(): MarkdownActionElements {
   const root = document.createElement("div");
   root.className = "article-actions";
   root.innerHTML = `
-    <button class="article-copy-main" type="button">
-      ${copyIcon()}
-      ${checkIcon()}
+    <button class="article-copy-main" type="button" aria-label="Ask ChatGPT about this page" title="Ask ChatGPT about this page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></svg>
       <span class="article-copy-label">${defaultCopyLabel}</span>
     </button>
-    <button class="article-copy-chevron-button" type="button" aria-label="Copy page options" aria-expanded="false" aria-haspopup="menu">
+    <button class="article-copy-chevron-button" type="button" aria-label="AI and page options" aria-expanded="false" aria-haspopup="menu">
       ${chevronIcon()}
     </button>
     <div class="article-copy-menu" role="menu">
@@ -88,9 +89,6 @@ function createActions(): MarkdownActionElements {
 
   const mainButton = root.querySelector<HTMLButtonElement>(".article-copy-main");
   const chevronButton = root.querySelector<HTMLButtonElement>(".article-copy-chevron-button");
-  const label = root.querySelector<HTMLElement>(".article-copy-label");
-  const copyIconElement = root.querySelector<HTMLElement>(".article-copy-icon");
-  const checkIconElement = root.querySelector<HTMLElement>(".article-check-icon");
   const menuCopyButton = root.querySelector<HTMLButtonElement>('[data-markdown-action="copy"]');
   const menuCopyLabel = root.querySelector<HTMLElement>(".article-copy-menu-label");
   const menu = root.querySelector<HTMLElement>(".article-copy-menu");
@@ -98,9 +96,6 @@ function createActions(): MarkdownActionElements {
   if (
     !mainButton ||
     !chevronButton ||
-    !label ||
-    !copyIconElement ||
-    !checkIconElement ||
     !menuCopyButton ||
     !menuCopyLabel ||
     !menu ||
@@ -113,7 +108,6 @@ function createActions(): MarkdownActionElements {
     root,
     mainButton,
     chevronButton,
-    label,
     menuCopyButton,
     menuCopyLabel,
     menu,
@@ -168,10 +162,9 @@ function beginCopyStatus(actions: MarkdownActionElements): number {
   copyStatusSequence += 1;
   const token = copyStatusSequence;
   actions.root.dataset.copyStatusToken = String(token);
-  actions.mainButton.setAttribute("aria-busy", "true");
   actions.menuCopyButton.setAttribute("aria-busy", "true");
   actions.root.classList.remove("is-copied");
-  setCopyLabel(actions, "Copying...", "Copying...", "Copying page as Markdown.");
+  setCopyLabel(actions, "Copying...", "Copying page as Markdown.");
   return token;
 }
 
@@ -185,10 +178,9 @@ function completeCopyStatus(
     return;
   }
 
-  actions.mainButton.removeAttribute("aria-busy");
   actions.menuCopyButton.removeAttribute("aria-busy");
   actions.root.classList.toggle("is-copied", label === "Copied!");
-  setCopyLabel(actions, label, label, announcement);
+  setCopyLabel(actions, label, announcement);
   window.setTimeout(() => resetCopyStatus(actions, token), 2_000);
 }
 
@@ -197,9 +189,7 @@ function resetCopyStatus(actions: MarkdownActionElements, token: number): void {
     return;
   }
 
-  actions.label.textContent = defaultCopyLabel;
   actions.menuCopyLabel.textContent = defaultMenuCopyLabel;
-  actions.mainButton.removeAttribute("aria-busy");
   actions.menuCopyButton.removeAttribute("aria-busy");
   actions.status.textContent = "";
   actions.root.classList.remove("is-copied");
@@ -208,11 +198,9 @@ function resetCopyStatus(actions: MarkdownActionElements, token: number): void {
 
 function setCopyLabel(
   actions: MarkdownActionElements,
-  mainLabel: string,
   menuLabel: string,
   announcement: string
 ): void {
-  actions.label.textContent = mainLabel;
   actions.menuCopyLabel.textContent = menuLabel;
   actions.status.textContent = announcement;
 }

@@ -60,11 +60,25 @@ const renderHeader = (): string => `
         <a class="brand" href="/">${SITE_NAME}</a>
         <nav class="primary-nav" aria-label="Primary">
           ${NAV_ITEMS.map((item) => `<a data-nav href="${item.href}">${item.label}</a>`).join("\n          ")}
+          <button class="site-search-trigger" type="button" data-site-search-trigger aria-label="Search this site" title="Search this site (⌘K)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.2 4.2" /></svg>
+            <span>Search</span><kbd>⌘K</kbd>
+          </button>
         </nav>
       </header>`;
 
 const renderFooter = (): string => `
       <footer class="site-footer">
+        <div class="pet-yard" aria-label="BSOD, the site companion">
+          <button class="pet-sprite" type="button" aria-label="Say hello to BSOD" title="Say hello to BSOD"></button>
+          <span class="pet-message" aria-live="polite">BSOD · little footer guardian</span>
+          <button class="pet-pause" type="button" aria-pressed="false">Pause pet</button>
+          <details class="pet-options"><summary>Pet options</summary>
+            <label>Companion <select class="pet-choice"><option value="bsod">BSOD</option><option value="dewey">Dewey · duck</option><option value="fireball">Fireball</option><option value="rocky">Rocky</option></select></label>
+            <label>Position <select class="pet-position"><option value="top">Top · navigation</option><option value="bottom">Bottom · footer</option></select></label>
+            <label><input class="pet-hidden" type="checkbox"> Hide pet</label>
+          </details>
+        </div>
         <div class="footer-identity">
           <p class="footer-kicker">© <span data-year></span> ${SITE_NAME}</p>
           <p>${SITE_ROLE}</p>

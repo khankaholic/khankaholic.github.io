@@ -1,6 +1,8 @@
 import "./styles.css";
+import { initFooterPet } from "./footer-pet";
 import { experienceEntries, projectEntries, writingEntries } from "./content";
 import { initLongform, syncLongformCommentsThemeWhenReady } from "./longform";
+import { initSiteSearch } from "./site-search";
 import { DEFAULT_META, PAGE_META, SITE_NAME } from "./site";
 import { renderBooksIndex, renderHomeBooks, renderHomeWriting, renderWritingIndex } from "./writing-cards";
 
@@ -304,39 +306,6 @@ function initWipNotice(): void {
 }
 
 
-function initAvatarToggle(): void {
-  const avatar = document.querySelector<HTMLElement>("[data-avatar]");
-  const toggle = document.querySelector<HTMLButtonElement>("[data-avatar-toggle]");
-  const caption = document.querySelector<HTMLElement>("[data-avatar-caption]");
-  if (!avatar || !toggle || !caption) {
-    return;
-  }
-
-  const storageKey = "avatar_blur_enabled";
-  const stored = window.localStorage.getItem(storageKey);
-  let isBlurred = stored === null ? true : stored === "true";
-
-  const render = (): void => {
-    avatar.classList.toggle("is-blurred", isBlurred);
-    toggle.setAttribute("aria-pressed", String(isBlurred));
-    toggle.setAttribute("aria-label", isBlurred ? "Show avatar" : "Blur avatar");
-    toggle.setAttribute("title", isBlurred ? "Show avatar" : "Blur avatar");
-    toggle.dataset.state = isBlurred ? "blurred" : "visible";
-    caption.textContent = isBlurred ? "Incognito mode: ON." : "Face unlocked. Be nice.";
-  };
-
-  toggle.addEventListener("click", () => {
-    isBlurred = !isBlurred;
-    window.localStorage.setItem(storageKey, String(isBlurred));
-    toggle.classList.remove("is-pop");
-    window.requestAnimationFrame(() => toggle.classList.add("is-pop"));
-    window.setTimeout(() => toggle.classList.remove("is-pop"), 230);
-    render();
-  });
-
-  render();
-}
-
 function renderHomeProjects(): void {
   const container = document.querySelector<HTMLElement>("#home-projects");
   if (!container) {
@@ -411,8 +380,10 @@ function renderExperience(): void {
 }
 
 initCurrentYear();
+initFooterPet();
 initTheme();
 initThemeSwitcher();
+initSiteSearch();
 initSiteBrand();
 initPageMeta();
 initExternalLinks();
@@ -425,7 +396,6 @@ initNavCurrentState();
 initRevealObserver();
 initScrollProgress();
 initWipNotice();
-initAvatarToggle();
 renderHomeWriting(observePendingReveals);
 renderHomeBooks(observePendingReveals);
 renderWritingIndex(observePendingReveals);

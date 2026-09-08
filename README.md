@@ -52,13 +52,13 @@ This repo includes `.github/workflows/deploy.yml`.
   - `projects.html`
   - `cv.html`
 - Home intro text: `index.html`
-- Home avatar image: `public/images/profile/me-00.jpeg` (update file or path in `index.html` if you change it)
+- Home avatar image: `public/images/profile/avatar.png` (update file or path in `index.html` if you change it)
 
 ## Asset Organization
 
 Use this structure for static assets:
 
-- `public/images/profile/` for your personal photos (`me-00.jpeg`, future headshots)
+- `public/images/profile/` for your personal photos (`avatar.png`, future headshots)
 - `public/images/placeholders/` for fallback/demo images
 - `public/icons/` for browser/app icons (`favicon.ico`, png sizes, apple touch icon)
 - `public/favicon.svg` as svg fallback icon
