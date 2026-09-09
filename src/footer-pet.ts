@@ -13,6 +13,11 @@ export function initFooterPet(): void {
   let last = 0;
   let animationRow = -1;
   let animationTime = 0;
+  let drag: { id: number; startX: number; startY: number; x: number; y: number; active: boolean } | null = null;
+  let dragY = 0;
+  let suppressClick = false;
+  let dragSpeech = 0;
+  let restUntil = 0;
   const footer = document.querySelector<HTMLElement>(".site-footer")!;
   const header = document.querySelector<HTMLElement>(".site-header")!;
   const choice = yard.querySelector<HTMLSelectElement>(".pet-choice")!;
@@ -55,6 +60,7 @@ export function initFooterPet(): void {
     pet.title = `Say hello to ${choice.selectedOptions[0].text}`;
     message.textContent = `${choice.selectedOptions[0].text} · say hello`;
     x = 0;
+    dragY = 0;
     pet.style.transform = "translateX(0)";
     pet.style.backgroundPosition = "0 0";
     write("site-pet", choice.value);
@@ -67,7 +73,7 @@ export function initFooterPet(): void {
   let reply = 0;
   let speechTimer = 0;
   const showSpeech = (): void => {
-    const center = x + (position.value === "top" ? 26 : 48);
+    const center = x * (position.value === "top" ? .55 : 1) + (position.value === "top" ? 26 : 48);
     const left = Math.max(0, Math.min(center - 28, yard.clientWidth - 230));
     message.style.left = `${left}px`;
     message.style.setProperty("--bubble-tail", `${Math.max(16, Math.min(206, center - left))}px`);
@@ -81,6 +87,69 @@ export function initFooterPet(): void {
     2: [120, 120, 120, 120, 120, 120, 120, 220],
     3: [140, 140, 140, 280]
   };
+  const dragLines: Record<string, string[]> = {
+    bsod: ["😵‍💫 Gravity driver missing!", "🔌 Please don’t unplug me.", "💾 Saving my dignity…"],
+    dewey: ["🦆 Quack?! I’m flying!", "🪽 No pilot license yet.", "☁️ A duck above the clouds."],
+    fireball: ["🚀 Ignition! Here we go!", "🔥 Handle with warm gloves.", "☄️ Tiny comet coming through!"],
+    rocky: ["🪨 I thought I was immovable.", "😌 Taking the scenic route.", "🌍 A rolling stone, apparently."]
+  };
+  const finishDrag = (cancelled = false): void => {
+    if (!drag) return;
+    const previous = drag;
+    drag = null;
+    clearInterval(dragSpeech);
+    yard.classList.remove("pet-dragging");
+    if (pet.hasPointerCapture(previous.id)) pet.releasePointerCapture(previous.id);
+    if (!previous.active) return;
+    suppressClick = true;
+    window.setTimeout(() => { suppressClick = false; }, 0);
+    clicks = [];
+    const landingY = position.value === "top" ? 0 : Math.max(0, yard.clientHeight - 104);
+    const fromY = dragY;
+    dragY = landingY;
+    pet.style.transform = `translate(${x}px, ${landingY}px)`;
+    if (!reduced.matches && Math.abs(fromY - landingY) > 1) {
+      pet.animate([
+        { transform: `translate(${x}px, ${fromY}px)`, offset: 0, easing: "cubic-bezier(.42,0,1,1)" },
+        { transform: `translate(${x}px, ${landingY}px)`, offset: .7, easing: "ease-out" },
+        { transform: `translate(${x}px, ${landingY - 4}px)`, offset: .85, easing: "ease-in" },
+        { transform: `translate(${x}px, ${landingY}px)`, offset: 1 }
+      ], { duration: 380 });
+    }
+    restUntil = performance.now() + 1800;
+    message.textContent = cancelled ? "🛟 Back on solid ground." : "🛬 Safe landing. Nailed it.";
+    showSpeech();
+  };
+  pet.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || drag) return;
+    drag = { id: event.pointerId, startX: event.clientX, startY: event.clientY, x, y: dragY, active: false };
+    pet.setPointerCapture(event.pointerId);
+  });
+  pet.addEventListener("pointermove", (event) => {
+    if (!drag || drag.id !== event.pointerId) return;
+    if (!drag.active && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) return;
+    if (!drag.active) {
+      drag.active = true;
+      clicks = [];
+      yard.classList.add("pet-dragging");
+      let index = 0;
+      const talk = (): void => { message.textContent = dragLines[choice.value][index++ % 3]; showSpeech(); };
+      talk();
+      dragSpeech = window.setInterval(talk, 1300);
+    }
+    const scale = position.value === "top" ? .55 : 1;
+    x = Math.max(0, Math.min((yard.clientWidth - 96 * scale) / scale, drag.x + (event.clientX - drag.startX) / scale));
+    const minY = position.value === "top" ? Math.min(0, (104 * scale - yard.clientHeight) / scale) : 0;
+    const maxY = position.value === "top" ? 0 : Math.max(0, yard.clientHeight - 104);
+    dragY = Math.max(minY, Math.min(maxY, drag.y + (event.clientY - drag.startY) / scale));
+    pet.style.transform = `translate(${x}px, ${dragY}px)`;
+    showSpeech();
+    event.preventDefault();
+  });
+  pet.addEventListener("pointerup", () => finishDrag());
+  pet.addEventListener("pointercancel", () => finishDrag(true));
+  pet.addEventListener("lostpointercapture", () => finishDrag(true));
+  window.addEventListener("blur", () => finishDrag(true));
   let lastParty = -5000;
   const celebrate = (party = false): void => {
     if (party && performance.now() - lastParty < 3000) return;
@@ -129,6 +198,7 @@ export function initFooterPet(): void {
   reduced.addEventListener("change", () => { paused = reduced.matches; updatePause(); });
   new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }).observe(yard);
   pet.addEventListener("click", () => {
+    if (suppressClick) return;
     showSpeech();
     waveUntil = elapsed + 2200;
     animationRow = -1;
@@ -144,14 +214,15 @@ export function initFooterPet(): void {
   const tick = (now: number): void => {
     const delta = Math.min(now - last, 50);
     last = now;
-    if (visible && !document.hidden && !paused && !hidden.checked) {
+    if (visible && !document.hidden && !paused && !hidden.checked && !drag && now >= restUntil) {
       elapsed += delta;
       const phase = elapsed % 16000;
       const waving = elapsed < waveUntil || pet.matches(":hover, :focus-visible");
       const row = waving ? 3 : phase < 6000 ? 1 : phase < 8000 ? 0 : phase < 14000 ? 2 : 0;
-      const limit = Math.max(0, yard.clientWidth - 96);
+      const scale = position.value === "top" ? .55 : 1;
+      const limit = Math.max(0, (yard.clientWidth - 96 * scale) / scale);
       if (!waving) x = Math.max(0, Math.min(limit, x + (row === 1 ? 1 : row === 2 ? -1 : 0) * delta * .035));
-      pet.style.transform = `translateX(${x}px)`;
+      pet.style.transform = `translate(${x}px, ${dragY}px)`;
       animationTime = row === animationRow ? animationTime + delta : 0;
       animationRow = row;
       const frames = durations[row];

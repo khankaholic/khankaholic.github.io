@@ -6,6 +6,7 @@ type SearchEntry = {
   href: string;
   section: string;
   text: string;
+  content: string;
 };
 
 const pageRoutes = [
@@ -48,7 +49,7 @@ export function initSiteSearch(): void {
       .filter((entry, index, all) => all.findIndex((other) => other.href === entry.href) === index)
       .slice(0, 8);
     results.innerHTML = matches.length
-      ? matches.map(renderResult).join("")
+      ? matches.map((entry) => renderResult(entry, terms)).join("")
       : '<p class="site-search-empty">No results. Try a role, company, topic, or post title.</p>';
   };
 
@@ -134,15 +135,51 @@ async function addPageContent(entries: SearchEntry[]): Promise<void> {
 }
 
 function makeEntry(title: string, description: string, href: string, section: string, extra = ""): SearchEntry {
-  return { title, description, href, section, text: `${title} ${description} ${section} ${extra}`.toLowerCase() };
+  const content = `${description} ${extra}`.trim();
+  return { title, description, href, section, content, text: `${title} ${content} ${section}`.toLowerCase() };
 }
 
-function renderResult(entry: SearchEntry): string {
+function renderResult(entry: SearchEntry, terms: string[] = []): string {
   const escape = (value: string): string => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const highlight = (value: string): string => {
+    // Match literal query text, merge overlaps, and escape every rendered segment.
+    const ranges: [number, number][] = [];
+    const lower = value.toLowerCase();
+    for (const term of terms) {
+      let start = lower.indexOf(term);
+      while (start !== -1) {
+        ranges.push([start, start + term.length]);
+        start = lower.indexOf(term, start + term.length);
+      }
+    }
+    ranges.sort((a, b) => a[0] - b[0]);
+    const merged: [number, number][] = [];
+    for (const range of ranges) {
+      const previous = merged[merged.length - 1];
+      if (previous && range[0] <= previous[1]) previous[1] = Math.max(previous[1], range[1]);
+      else merged.push([...range]);
+    }
+    let end = 0;
+    let html = "";
+    for (const [start, stop] of merged) {
+      html += escape(value.slice(end, start)) + `<mark>${escape(value.slice(start, stop))}</mark>`;
+      end = stop;
+    }
+    return html + escape(value.slice(end));
+  };
+  let snippet = entry.description;
+  if (terms.length) {
+    const offsets = terms.map((term) => entry.content.toLowerCase().indexOf(term)).filter((offset) => offset >= 0);
+    if (offsets.length) {
+      const start = Math.max(0, Math.min(...offsets) - 45);
+      const stop = Math.min(entry.content.length, start + 170);
+      snippet = `${start ? "…" : ""}${entry.content.slice(start, stop)}${stop < entry.content.length ? "…" : ""}`;
+    }
+  }
   return `
     <a class="site-search-result" href="${escape(entry.href)}">
-      <span class="site-search-section">${escape(entry.section)}</span>
-      <strong>${escape(entry.title)}</strong>
-      <span>${escape(entry.description)}</span>
+      <span class="site-search-section">${highlight(entry.section)}</span>
+      <strong>${highlight(entry.title)}</strong>
+      <span>${highlight(snippet)}</span>
     </a>`;
 }
