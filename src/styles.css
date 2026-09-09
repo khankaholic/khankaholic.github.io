@@ -502,7 +502,6 @@ main {
 }
 
 .avatar-toggle:hover,
-.theme-toggle:hover,
 .chip:hover,
 .chip.is-active {
   color: var(--text);
@@ -851,6 +850,12 @@ article.longform h2,
   background: transparent;
   color: var(--muted);
   cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--soft);
+  background: var(--surface);
 }
 
 .theme-toggle svg {
