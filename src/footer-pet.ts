@@ -24,6 +24,27 @@ export function initFooterPet(): void {
   const position = yard.querySelector<HTMLSelectElement>(".pet-position")!;
   const hidden = yard.querySelector<HTMLInputElement>(".pet-hidden")!;
   const options = yard.querySelector<HTMLDetailsElement>(".pet-options")!;
+  // The header has no free lane on narrow screens, so the pet lives in the footer there.
+  const narrow = matchMedia("(max-width: 760px)");
+  const atTop = (): boolean => position.value === "top" && !narrow.matches;
+  let laneStart = 0;
+  let laneWidth = 0;
+  const measureLane = (): void => {
+    const brand = header.querySelector(".brand");
+    const firstNavLink = header.querySelector(".primary-nav a");
+    if (!atTop() || !brand || !firstNavLink) {
+      laneStart = 0;
+      laneWidth = yard.clientWidth;
+      pet.style.left = "";
+      return;
+    }
+    // Walk only in the gap between the brand and the nav so links stay readable.
+    const yardLeft = yard.getBoundingClientRect().left;
+    const brandRight = brand.getBoundingClientRect().right;
+    laneStart = brandRight - yardLeft + 16;
+    laneWidth = Math.max(0, firstNavLink.getBoundingClientRect().left - brandRight - 32);
+    pet.style.left = `${laneStart}px`;
+  };
   document.addEventListener("click", (event) => {
     if (options.open && event.target instanceof Node && !options.contains(event.target)) {
       options.open = false;
@@ -48,9 +69,9 @@ export function initFooterPet(): void {
   position.value = read("site-pet-position") === "bottom" ? "bottom" : "top";
   hidden.checked = read("site-pet-hidden") === "true";
   const configure = (): void => {
-    (position.value === "top" ? header : footer).append(yard);
-    yard.classList.toggle("pet-at-top", position.value === "top");
-    if (position.value === "top") yard.querySelector(".pet-options")!.append(pause);
+    (atTop() ? header : footer).append(yard);
+    yard.classList.toggle("pet-at-top", atTop());
+    if (atTop()) yard.querySelector(".pet-options")!.append(pause);
     else yard.append(pause);
     pet.style.backgroundImage = `url('/images/pets/${choice.value}.webp')`;
     pet.hidden = hidden.checked;
@@ -59,6 +80,7 @@ export function initFooterPet(): void {
     pet.setAttribute("aria-label", `Say hello to ${choice.selectedOptions[0].text}`);
     pet.title = `Say hello to ${choice.selectedOptions[0].text}`;
     message.textContent = `${choice.selectedOptions[0].text} · say hello`;
+    measureLane();
     x = 0;
     dragY = 0;
     pet.style.transform = "translateX(0)";
@@ -68,12 +90,18 @@ export function initFooterPet(): void {
     write("site-pet-hidden", String(hidden.checked));
   };
   [choice, position, hidden].forEach((control) => control.addEventListener("change", configure));
+  narrow.addEventListener("change", configure);
+  window.addEventListener("resize", () => {
+    measureLane();
+    const scale = atTop() ? .55 : 1;
+    x = Math.min(x, Math.max(0, (laneWidth - 96 * scale) / scale));
+  });
   configure();
   let clicks: number[] = [];
   let reply = 0;
   let speechTimer = 0;
   const showSpeech = (): void => {
-    const center = x * (position.value === "top" ? .55 : 1) + (position.value === "top" ? 26 : 48);
+    const center = laneStart + x * (atTop() ? .55 : 1) + (atTop() ? 26 : 48);
     const left = Math.max(0, Math.min(center - 28, yard.clientWidth - 230));
     message.style.left = `${left}px`;
     message.style.setProperty("--bubble-tail", `${Math.max(16, Math.min(206, center - left))}px`);
@@ -104,7 +132,7 @@ export function initFooterPet(): void {
     suppressClick = true;
     window.setTimeout(() => { suppressClick = false; }, 0);
     clicks = [];
-    const landingY = position.value === "top" ? 0 : Math.max(0, yard.clientHeight - 104);
+    const landingY = atTop() ? 0 : Math.max(0, yard.clientHeight - 104);
     const fromY = dragY;
     dragY = landingY;
     pet.style.transform = `translate(${x}px, ${landingY}px)`;
@@ -137,10 +165,10 @@ export function initFooterPet(): void {
       talk();
       dragSpeech = window.setInterval(talk, 1300);
     }
-    const scale = position.value === "top" ? .55 : 1;
-    x = Math.max(0, Math.min((yard.clientWidth - 96 * scale) / scale, drag.x + (event.clientX - drag.startX) / scale));
-    const minY = position.value === "top" ? Math.min(0, (104 * scale - yard.clientHeight) / scale) : 0;
-    const maxY = position.value === "top" ? 0 : Math.max(0, yard.clientHeight - 104);
+    const scale = atTop() ? .55 : 1;
+    x = Math.max(0, Math.min((laneWidth - 96 * scale) / scale, drag.x + (event.clientX - drag.startX) / scale));
+    const minY = atTop() ? Math.min(0, (104 * scale - yard.clientHeight) / scale) : 0;
+    const maxY = atTop() ? 0 : Math.max(0, yard.clientHeight - 104);
     dragY = Math.max(minY, Math.min(maxY, drag.y + (event.clientY - drag.startY) / scale));
     pet.style.transform = `translate(${x}px, ${dragY}px)`;
     showSpeech();
@@ -185,7 +213,7 @@ export function initFooterPet(): void {
       if (sessionStorage.getItem("cv-celebrate-pending")) {
         sessionStorage.removeItem("cv-celebrate-pending");
         sessionStorage.setItem("cv-celebrated", "true");
-        if (position.value === "top" && !hidden.checked) setTimeout(celebrate, 400);
+        if (atTop() && !hidden.checked) setTimeout(celebrate, 400);
       }
     } catch { /* Optional celebration. */ }
   }
@@ -219,8 +247,8 @@ export function initFooterPet(): void {
       const phase = elapsed % 16000;
       const waving = elapsed < waveUntil || pet.matches(":hover, :focus-visible");
       const row = waving ? 3 : phase < 6000 ? 1 : phase < 8000 ? 0 : phase < 14000 ? 2 : 0;
-      const scale = position.value === "top" ? .55 : 1;
-      const limit = Math.max(0, (yard.clientWidth - 96 * scale) / scale);
+      const scale = atTop() ? .55 : 1;
+      const limit = Math.max(0, (laneWidth - 96 * scale) / scale);
       if (!waving) x = Math.max(0, Math.min(limit, x + (row === 1 ? 1 : row === 2 ? -1 : 0) * delta * .035));
       pet.style.transform = `translate(${x}px, ${dragY}px)`;
       animationTime = row === animationRow ? animationTime + delta : 0;

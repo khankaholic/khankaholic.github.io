@@ -43,6 +43,21 @@ const renderHead = (path: string): string => {
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#fdfbf7" />
     <meta name="description" content="${escapeHtml(meta.description)}" />
+    <script>
+      // Apply the saved theme before first paint so dark-mode visitors never see a light flash.
+      (() => {
+        const root = document.documentElement;
+        root.classList.add("js");
+        let preference = "system";
+        try {
+          preference = localStorage.getItem("theme_preference") || "system";
+        } catch {}
+        const dark =
+          preference === "dark" || (preference !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+        root.dataset.theme = dark ? "dark" : "light";
+        root.style.colorScheme = root.dataset.theme;
+      })();
+    </script>
     <title>${escapeHtml(meta.title)}</title>
     <script
       defer
@@ -60,11 +75,13 @@ const renderHeader = (): string => `
         <a class="brand" href="/">${SITE_NAME}</a>
         <nav class="primary-nav" aria-label="Primary">
           ${NAV_ITEMS.map((item) => `<a data-nav href="${item.href}">${item.label}</a>`).join("\n          ")}
+        </nav>
+        <div class="header-tools">
           <button class="site-search-trigger" type="button" data-site-search-trigger aria-label="Search this site" title="Search this site (⌘K)">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.2 4.2" /></svg>
             <span>Search</span><kbd>⌘K</kbd>
           </button>
-        </nav>
+        </div>
       </header>`;
 
 const renderFooter = (): string => `

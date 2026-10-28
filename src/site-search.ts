@@ -1,4 +1,4 @@
-import { experienceEntries, writingEntries } from "./content";
+import { educationEntries, experienceEntries, writingEntries } from "./content";
 
 type SearchEntry = {
   title: string;
@@ -109,7 +109,7 @@ function createDialog(): HTMLDialogElement {
 function createBundledEntries(): SearchEntry[] {
   return [
     ...writingEntries.map((entry) => makeEntry(entry.title, entry.excerpt, entry.url, entry.kind === "review" ? "Books" : "Writing", `${entry.tag} ${entry.kind}`)),
-    ...experienceEntries.map((entry) =>
+    ...[...experienceEntries, ...educationEntries].map((entry) =>
       makeEntry(entry.role, `${entry.company} · ${entry.period}`, "/cv.html", "Profile", `${entry.location} ${entry.highlights.join(" ")}`)
     )
   ];

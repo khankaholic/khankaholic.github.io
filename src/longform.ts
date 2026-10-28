@@ -54,20 +54,51 @@ function initTableOfContents(article: HTMLElement): void {
   toc.className = "article-toc";
   toc.setAttribute("aria-label", "Table of contents");
   toc.innerHTML = `
-    <p class="article-toc-title">On this page</p>
-    <nav>
-      ${tocItems
-        .map(
-          (item) =>
-            `<a class="article-toc-link article-toc-link-level-${item.level}" href="#${item.id}">${item.text}</a>`
-        )
-        .join("")}
-    </nav>
+    <details open>
+      <summary class="article-toc-title">On this page</summary>
+      <nav>
+        ${tocItems
+          .map(
+            (item) =>
+              `<a class="article-toc-link article-toc-link-level-${item.level}" href="#${item.id}">${item.text}</a>`
+          )
+          .join("")}
+      </nav>
+    </details>
   `;
 
   article.before(shell);
   shell.append(toc, article);
+  initTocCollapse(toc);
   initActiveTocLink(toc, article);
+}
+
+// On narrow screens the TOC sits above the title, so it starts collapsed to keep the post in view.
+// On wide screens it is a sidebar and always stays open.
+function initTocCollapse(toc: HTMLElement): void {
+  const details = toc.querySelector<HTMLDetailsElement>("details");
+  const summary = toc.querySelector<HTMLElement>("summary");
+  if (!details || !summary) {
+    return;
+  }
+
+  const narrow = window.matchMedia("(max-width: 760px)");
+  const sync = (): void => {
+    details.open = !narrow.matches;
+    if (narrow.matches) {
+      summary.removeAttribute("tabindex");
+    } else {
+      summary.setAttribute("tabindex", "-1");
+    }
+  };
+
+  details.addEventListener("toggle", () => {
+    if (!narrow.matches && !details.open) {
+      details.open = true;
+    }
+  });
+  narrow.addEventListener("change", sync);
+  sync();
 }
 
 function collectTocItems(article: HTMLElement): TocItem[] {
