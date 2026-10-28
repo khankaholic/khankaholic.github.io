@@ -1,15 +1,10 @@
 import { createArticleMarkdown } from "./article-markdown-content";
-import {
-  assistantActions,
-  openAssistant,
-  type AssistantId
-} from "./assistant-links";
+import { assistantActions, openAssistant, type AssistantId } from "./assistant-links";
 import { assistantIcon, chevronIcon, copyIcon, externalArrow, markdownIcon } from "./article-action-icons";
 
 interface MarkdownActionElements {
   readonly root: HTMLElement;
-  readonly mainButton: HTMLButtonElement;
-  readonly chevronButton: HTMLButtonElement;
+  readonly trigger: HTMLButtonElement;
   readonly menuCopyButton: HTMLButtonElement;
   readonly menuCopyLabel: HTMLElement;
   readonly menu: HTMLElement;
@@ -30,23 +25,38 @@ export function initArticleMarkdownActions(article: HTMLElement): void {
 
   const actions = createActions();
   placeActions(article, actions.root);
-  actions.mainButton.addEventListener("click", () => {
-    openAssistant("chatgpt");
-    setStatus(actions, "Opened ChatGPT.");
+  actions.trigger.addEventListener("click", (event) => {
+    const willOpen = !isMenuOpen(actions);
+    setMenuOpen(actions, willOpen);
+    // Keyboard activation (detail 0) moves focus into the menu, as menu buttons should.
+    if (willOpen && event.detail === 0) {
+      focusMenuItem(actions, 0);
+    }
   });
-  actions.chevronButton.addEventListener("click", () => {
-    setMenuOpen(actions, !actions.root.classList.contains("is-open"));
+  actions.trigger.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setMenuOpen(actions, true);
+      focusMenuItem(actions, event.key === "ArrowDown" ? 0 : -1);
+    }
   });
   actions.menu.addEventListener("click", (event) => handleMenuClick(event, article, actions));
+  actions.menu.addEventListener("keydown", (event) => handleMenuKeydown(event, actions));
+  actions.root.addEventListener("focusout", (event) => {
+    // Clicks on non-focusable targets report no relatedTarget; the document click handler covers those.
+    if (event.relatedTarget instanceof Node && !actions.root.contains(event.relatedTarget)) {
+      setMenuOpen(actions, false);
+    }
+  });
   document.addEventListener("click", (event) => {
     if (event.target instanceof Node && !actions.root.contains(event.target)) {
       setMenuOpen(actions, false);
     }
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
+    if (event.key === "Escape" && isMenuOpen(actions)) {
       setMenuOpen(actions, false);
-      actions.chevronButton.focus();
+      actions.trigger.focus();
     }
   });
 }
@@ -72,14 +82,12 @@ function createActions(): MarkdownActionElements {
   const root = document.createElement("div");
   root.className = "article-actions";
   root.innerHTML = `
-    <button class="article-copy-main" type="button" aria-label="Ask ChatGPT about this page" title="Ask ChatGPT about this page">
+    <button class="article-copy-main" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="article-ai-menu">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></svg>
       <span class="article-copy-label">${defaultCopyLabel}</span>
-    </button>
-    <button class="article-copy-chevron-button" type="button" aria-label="AI and page options" aria-expanded="false" aria-haspopup="menu">
       ${chevronIcon()}
     </button>
-    <div class="article-copy-menu" role="menu">
+    <div class="article-copy-menu" id="article-ai-menu" role="menu" aria-label="AI and page options">
       ${renderMenuButton("copy", copyIcon(), "Copy page as Markdown for LLMs", defaultMenuCopyLabel)}
       ${renderMenuButton("open", markdownIcon(), "View this page as plain text", "View as Markdown", externalArrow())}
       ${assistantActions.map((action) => renderAssistantButton(action.id, action.label, action.description)).join("")}
@@ -87,15 +95,13 @@ function createActions(): MarkdownActionElements {
     <p class="article-copy-status" aria-live="polite"></p>
   `;
 
-  const mainButton = root.querySelector<HTMLButtonElement>(".article-copy-main");
-  const chevronButton = root.querySelector<HTMLButtonElement>(".article-copy-chevron-button");
+  const trigger = root.querySelector<HTMLButtonElement>(".article-copy-main");
   const menuCopyButton = root.querySelector<HTMLButtonElement>('[data-markdown-action="copy"]');
   const menuCopyLabel = root.querySelector<HTMLElement>(".article-copy-menu-label");
   const menu = root.querySelector<HTMLElement>(".article-copy-menu");
   const status = root.querySelector<HTMLElement>(".article-copy-status");
   if (
-    !mainButton ||
-    !chevronButton ||
+    !trigger ||
     !menuCopyButton ||
     !menuCopyLabel ||
     !menu ||
@@ -106,8 +112,7 @@ function createActions(): MarkdownActionElements {
 
   return {
     root,
-    mainButton,
-    chevronButton,
+    trigger,
     menuCopyButton,
     menuCopyLabel,
     menu,
@@ -133,11 +138,53 @@ function handleMenuClick(event: MouseEvent, article: HTMLElement, actions: Markd
     setStatus(actions, "Opened assistant.");
   }
   setMenuOpen(actions, false);
+  actions.trigger.focus();
+}
+
+function isMenuOpen(actions: MarkdownActionElements): boolean {
+  return actions.root.classList.contains("is-open");
 }
 
 function setMenuOpen(actions: MarkdownActionElements, isOpen: boolean): void {
   actions.root.classList.toggle("is-open", isOpen);
-  actions.chevronButton.setAttribute("aria-expanded", String(isOpen));
+  actions.trigger.setAttribute("aria-expanded", String(isOpen));
+}
+
+function menuItems(actions: MarkdownActionElements): HTMLButtonElement[] {
+  return [...actions.menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]')];
+}
+
+function focusMenuItem(actions: MarkdownActionElements, index: number): void {
+  const items = menuItems(actions);
+  if (items.length > 0) {
+    items[(index + items.length) % items.length].focus();
+  }
+}
+
+function handleMenuKeydown(event: KeyboardEvent, actions: MarkdownActionElements): void {
+  const items = menuItems(actions);
+  const current = items.findIndex((item) => item === document.activeElement);
+  switch (event.key) {
+    case "ArrowDown":
+      event.preventDefault();
+      focusMenuItem(actions, current + 1);
+      break;
+    case "ArrowUp":
+      event.preventDefault();
+      focusMenuItem(actions, current <= 0 ? -1 : current - 1);
+      break;
+    case "Home":
+      event.preventDefault();
+      focusMenuItem(actions, 0);
+      break;
+    case "End":
+      event.preventDefault();
+      focusMenuItem(actions, -1);
+      break;
+    case "Tab":
+      setMenuOpen(actions, false);
+      break;
+  }
 }
 
 function copyMarkdown(markdown: string, actions: MarkdownActionElements): void {

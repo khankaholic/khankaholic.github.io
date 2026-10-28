@@ -1,6 +1,6 @@
 import "./styles.css";
 import { initFooterPet } from "./footer-pet";
-import { experienceEntries, projectEntries, writingEntries } from "./content";
+import { educationEntries, experienceEntries, projectEntries, writingEntries, type ExperienceEntry } from "./content";
 import { initLongform, syncLongformCommentsThemeWhenReady } from "./longform";
 import { initSiteSearch } from "./site-search";
 import { DEFAULT_META, PAGE_META, SITE_NAME } from "./site";
@@ -14,7 +14,7 @@ const themeColorLight = "#fdfbf7";
 const themeColorDark = "#151412";
 
 let revealObserver: IntersectionObserver | null = null;
-let currentThemePreference: ThemePreference = "light";
+let currentThemePreference: ThemePreference = "system";
 let systemThemeMediaQuery: MediaQueryList | null = null;
 
 function initCurrentYear(): void {
@@ -65,7 +65,7 @@ function normalizeThemePreference(value: string | null): ThemePreference {
   if (value === "light" || value === "dark" || value === "system") {
     return value;
   }
-  return "light";
+  return "system";
 }
 
 function resolveTheme(preference: ThemePreference): ResolvedTheme {
@@ -125,7 +125,11 @@ function setThemePreference(preference: ThemePreference, shouldPersist = true): 
   syncGiscusThemeWhenReady();
 
   if (shouldPersist) {
-    window.localStorage.setItem(themeStorageKey, preference);
+    try {
+      window.localStorage.setItem(themeStorageKey, preference);
+    } catch {
+      // Theme still applies for this page view without storage.
+    }
   }
 }
 
@@ -140,7 +144,13 @@ function getNextThemePreference(preference: ThemePreference): ThemePreference {
 }
 
 function initTheme(): void {
-  const storedPreference = normalizeThemePreference(window.localStorage.getItem(themeStorageKey));
+  let storedValue: string | null = null;
+  try {
+    storedValue = window.localStorage.getItem(themeStorageKey);
+  } catch {
+    // Fall back to the system preference when storage is blocked.
+  }
+  const storedPreference = normalizeThemePreference(storedValue);
   systemThemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
   setThemePreference(storedPreference, false);
 
@@ -158,8 +168,8 @@ function initTheme(): void {
 }
 
 function initThemeSwitcher(): void {
-  const nav = document.querySelector<HTMLElement>("nav.primary-nav");
-  if (!nav || nav.querySelector("[data-theme-switch]")) {
+  const tools = document.querySelector<HTMLElement>(".header-tools");
+  if (!tools || tools.querySelector("[data-theme-switch]")) {
     return;
   }
 
@@ -209,7 +219,7 @@ function initThemeSwitcher(): void {
   });
   switcher.append(button);
 
-  nav.append(switcher);
+  tools.append(switcher);
   updateThemeControlState();
 }
 
@@ -256,7 +266,9 @@ function initRevealObserver(): void {
       });
     },
     {
-      threshold: 0.2,
+      // Any visible pixel counts: a ratio threshold can never be met by elements
+      // taller than the viewport, which would leave them hidden forever.
+      threshold: 0,
       rootMargin: "0px 0px -5% 0px"
     }
   );
@@ -301,7 +313,7 @@ function initWipNotice(): void {
   notice.className = "wip-notice";
   notice.setAttribute("role", "note");
   notice.innerHTML =
-    "<strong>Work in progress:</strong> this website is currently being built, and most content is placeholder for now.";
+    "<strong>Work in progress:</strong> most content here is placeholder for now.";
   siteWrap.prepend(notice);
 }
 
@@ -309,6 +321,12 @@ function initWipNotice(): void {
 function renderHomeProjects(): void {
   const container = document.querySelector<HTMLElement>("#home-projects");
   if (!container) {
+    return;
+  }
+
+  // Hide the whole section rather than show a heading with nothing under it.
+  if (projectEntries.length === 0) {
+    container.closest<HTMLElement>("section")?.setAttribute("hidden", "");
     return;
   }
 
@@ -336,6 +354,16 @@ function renderProjectsIndex(): void {
     return;
   }
 
+  if (projectEntries.length === 0) {
+    container.innerHTML = `
+      <p class="empty-note">
+        Nothing public here yet. Projects are being written up; until then, the <a href="/cv.html">CV</a>
+        covers what I have been building.
+      </p>
+    `;
+    return;
+  }
+
   container.innerHTML = projectEntries
     .map(
       (project) => `
@@ -353,13 +381,13 @@ function renderProjectsIndex(): void {
   observePendingReveals();
 }
 
-function renderExperience(): void {
-  const container = document.querySelector<HTMLElement>("#experience-list");
+function renderTimeline(selector: string, entries: readonly ExperienceEntry[]): void {
+  const container = document.querySelector<HTMLElement>(selector);
   if (!container) {
     return;
   }
 
-  container.innerHTML = experienceEntries
+  container.innerHTML = entries
     .map(
       (entry) => `
       <article class="timeline-item reveal">
@@ -402,4 +430,5 @@ renderWritingIndex(observePendingReveals);
 renderBooksIndex(observePendingReveals);
 renderHomeProjects();
 renderProjectsIndex();
-renderExperience();
+renderTimeline("#experience-list", experienceEntries);
+renderTimeline("#education-list", educationEntries);

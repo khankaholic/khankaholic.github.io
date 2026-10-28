@@ -110,7 +110,10 @@ export const experienceEntries: ExperienceEntry[] = [
       "Trained and evaluated lightweight CV models for document image classification with 85%+ accuracy on client datasets.",
       "Worked with YOLOv5 for object counting tasks and tuned augmentation strategies for varying daylight environments."
     ]
-  },
+  }
+];
+
+export const educationEntries: ExperienceEntry[] = [
   {
     role: "Bachelor of Data Science and AI (Very Good)",
     company: "Hanoi University of Science and Technology (HUST)",

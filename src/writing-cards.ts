@@ -15,7 +15,7 @@ export function renderHomeWriting(onRendered: () => void): void {
     return;
   }
 
-  const latest = sortedByNewest(writingEntries.filter((entry) => entry.kind === "post")).slice(0, 3);
+  const latest = sortedByNewest(writingEntries.filter((entry) => entry.kind === "post" && !isDraft(entry))).slice(0, 3);
   renderCards(container, latest, onRendered);
 }
 
@@ -25,7 +25,7 @@ export function renderHomeBooks(onRendered: () => void): void {
     return;
   }
 
-  const latest = sortedByNewest(writingEntries.filter((entry) => entry.kind === "review")).slice(0, 2);
+  const latest = sortedByNewest(writingEntries.filter((entry) => entry.kind === "review" && !isDraft(entry))).slice(0, 2);
   renderCards(container, latest, onRendered);
 }
 
@@ -80,21 +80,25 @@ function renderCards(container: HTMLElement, entries: readonly WritingEntry[], o
 function createWritingCard(entry: WritingEntry): string {
   const kindLabel = entry.kind === "review" ? "Book Review" : "Post";
   const linkLabel = entry.kind === "review" ? "Read review" : "Read post";
-  const isDraft = entry.url === "#";
+  const draft = isDraft(entry);
   const content = `
       <h3>${entry.title}</h3>
       <p>${entry.excerpt}</p>
   `;
+  // Skip the tag when it only repeats the kind label (e.g. "Book Review").
+  const tag = entry.tag.toLowerCase() === kindLabel.toLowerCase() ? "" : `<span>${entry.tag}</span>`;
 
+  // The title link stretches over the whole card, so the call-to-action is visual only
+  // and keyboard users get one tab stop per card.
   return `
-    <article class="card reveal">
+    <article class="card reveal${draft ? "" : " card-linked"}">
       <p class="eyebrow">${kindLabel}<span data-reading-time-url="${entry.url}">${initialReadingTime(entry)}</span></p>
-      ${isDraft ? content : `<a class="card-main-link" href="${entry.url}">${content}</a>`}
+      ${draft ? content : `<a class="card-main-link" href="${entry.url}">${content}</a>`}
       <div class="meta-row">
         <span>${formatDate(entry.date)}</span>
-        <span>${entry.tag}</span>
+        ${tag}
       </div>
-      ${isDraft ? '<span class="inline-note">Draft in progress</span>' : `<a href="${entry.url}">${linkLabel}</a>`}
+      ${draft ? '<span class="inline-note">Draft in progress</span>' : `<span class="card-cta" aria-hidden="true">${linkLabel}</span>`}
     </article>
   `;
 }
@@ -104,7 +108,7 @@ async function hydrateReadingTimes(container: HTMLElement, entries: readonly Wri
 }
 
 async function hydrateReadingTime(container: HTMLElement, entry: WritingEntry): Promise<void> {
-  if (entry.url === "#") {
+  if (isDraft(entry)) {
     return;
   }
 
@@ -123,6 +127,10 @@ async function hydrateReadingTime(container: HTMLElement, entry: WritingEntry): 
 function initialReadingTime(entry: WritingEntry): string {
   const readingTime = entry.url === "#" ? entry.readingTime : getCachedArticleReadingTime(entry.url) ?? entry.readingTime;
   return readingTime ? ` · ${readingTime}` : "";
+}
+
+function isDraft(entry: WritingEntry): boolean {
+  return entry.url === "#";
 }
 
 function normalizeWritingFilter(value: string | undefined): WritingFilter {

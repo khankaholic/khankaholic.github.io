@@ -77,7 +77,8 @@ a:hover {
 }
 
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+summary:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 3px;
 }
@@ -121,9 +122,9 @@ header.site-header {
   top: 0;
   z-index: 50;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1.5rem;
-  align-items: start;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 0.9rem;
+  align-items: center;
   padding: 1.45rem 0 1.05rem;
   background: var(--bg);
   border-bottom: 1px solid var(--line);
@@ -131,6 +132,7 @@ header.site-header {
 
 .brand,
 nav.primary-nav,
+.header-tools,
 .eyebrow,
 .section-note,
 .meta-row,
@@ -156,6 +158,15 @@ nav.primary-nav {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
+  gap: 0.72rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.43;
+}
+
+.header-tools {
+  display: flex;
   align-items: center;
   gap: 0.72rem;
   color: var(--muted);
@@ -209,9 +220,12 @@ nav.primary-nav a.is-active {
 .pet-at-top.pet-dragging { z-index: 4; }
 .pet-yard.pet-dragging .pet-sprite { cursor: grabbing; }
 header.site-header > .brand,
-header.site-header > .primary-nav { position: relative; z-index: 1; }
-header.site-header > .primary-nav { pointer-events: none; }
-header.site-header > .primary-nav > * { pointer-events: auto; }
+header.site-header > .primary-nav,
+header.site-header > .header-tools { position: relative; z-index: 1; }
+header.site-header > .primary-nav,
+header.site-header > .header-tools { pointer-events: none; }
+header.site-header > .primary-nav > *,
+header.site-header > .header-tools > * { pointer-events: auto; }
 .pet-yard .pet-message {
   display: none;
   top: 106px;
@@ -251,7 +265,7 @@ header.site-header > .primary-nav > * { pointer-events: auto; }
 .pet-options[open] { padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); box-shadow: 0 6px 20px #0002; }
 .pet-options label { display: block; margin-top: 8px; }
 .pet-options select { display: block; margin-top: 4px; color: var(--text); background: var(--bg); font: inherit; max-width: 180px; }
-.pet-at-top .pet-options { top: auto; bottom: 0; pointer-events: auto; font-size: 9px; }
+.pet-at-top .pet-options { top: auto; bottom: 0; pointer-events: auto; font-size: 11px; line-height: 1.3; }
 .pet-at-top .pet-options[open] { top: calc(100% - 14px); bottom: auto; font-size: 11px; }
 
 .pet-yard.pet-is-hidden:not(.pet-at-top) {
@@ -382,6 +396,12 @@ header.site-header > .primary-nav > * { pointer-events: auto; }
   background: transparent;
   color: var(--text);
   font: inherit;
+}
+
+/* The dialog already has a close button; drop the browser's built-in clear "×". */
+.site-search-input input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .site-search-results {
@@ -751,6 +771,7 @@ article.longform h2,
 .card a,
 .card-main-link,
 .card .inline-note,
+.card .card-cta,
 .timeline-item header,
 .timeline-item ul {
   grid-column: 1;
@@ -788,11 +809,54 @@ article.longform h2,
 }
 
 .card a,
+.card-cta,
 .inline-note {
   justify-self: start;
   margin-top: 0.78rem;
 }
 
+.card-linked {
+  position: relative;
+}
+
+/* Stretch the title link over the card so the whole card is clickable. */
+.card-linked .card-main-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.card-linked:hover h3 {
+  color: var(--accent-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--mark);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.16em;
+}
+
+.card-linked:hover p:not(.eyebrow) {
+  color: var(--text);
+}
+
+.card-linked:hover .card-cta {
+  border-bottom-color: var(--mark);
+}
+
+.card-linked .card-main-link:focus-visible {
+  outline: 0;
+}
+
+.card-linked:has(.card-main-link:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 4px;
+}
+
+.empty-note {
+  margin: 1rem 0 0;
+  color: var(--muted);
+}
+
+.card-cta,
 .card > a:not(.card-main-link) {
   color: var(--text);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -990,8 +1054,7 @@ article.longform {
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.article-copy-main,
-.article-copy-chevron-button {
+.article-copy-main {
   min-height: 1.92rem;
   display: inline-flex;
   align-items: center;
@@ -1007,20 +1070,12 @@ article.longform {
 
 .article-copy-main {
   gap: 0.4rem;
-  padding: 0.34rem 0.56rem 0.34rem 0.62rem;
-  border-radius: 7px 0 0 7px;
-}
-
-.article-copy-chevron-button {
-  justify-content: center;
-  padding: 0.34rem 0.44rem;
-  border-left: 1px solid var(--line);
-  border-radius: 0 7px 7px 0;
+  padding: 0.34rem 0.5rem 0.34rem 0.62rem;
+  border-radius: 7px;
 }
 
 .article-copy-main:hover,
-.article-copy-chevron-button:hover,
-.article-actions.is-open .article-copy-chevron-button,
+.article-actions.is-open .article-copy-main,
 .article-actions.is-copied .article-copy-main {
   color: var(--text);
   background: var(--surface);
@@ -1136,13 +1191,6 @@ article.longform {
 
 .article-actions.is-open .article-copy-menu {
   display: grid;
-}
-
-@media (hover: hover) {
-  .article-actions:hover .article-copy-menu,
-  .article-actions:focus-within .article-copy-menu {
-    display: grid;
-  }
 }
 
 .article-copy-menu button {
@@ -1266,23 +1314,22 @@ article.longform {
   position: sticky;
   top: 6.2rem;
   padding-top: 0.2rem;
-  color: color-mix(in srgb, var(--soft) 58%, var(--bg));
+  color: var(--soft);
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
   line-height: 1.55;
-  opacity: 0.72;
-  transition: opacity 0.18s ease;
-}
-
-.article-toc:hover,
-.article-toc:focus-within {
-  opacity: 1;
 }
 
 .article-toc-title {
   margin: 0 0 0.55rem;
-  color: color-mix(in srgb, var(--soft) 72%, var(--bg));
+  color: var(--muted);
   font-weight: 500;
+  list-style: none;
+  cursor: default;
+}
+
+.article-toc-title::-webkit-details-marker {
+  display: none;
 }
 
 .article-toc nav {
@@ -1291,7 +1338,7 @@ article.longform {
 }
 
 .article-toc-link {
-  color: color-mix(in srgb, var(--soft) 58%, var(--bg));
+  color: var(--soft);
   text-decoration: none;
   border-left: 1px solid color-mix(in srgb, var(--line) 48%, transparent);
   padding-left: 0.62rem;
@@ -1303,7 +1350,7 @@ article.longform {
 
 .article-toc-link:hover,
 .article-toc-link.is-active {
-  color: var(--muted);
+  color: var(--text);
   border-left-color: color-mix(in srgb, var(--mark) 42%, var(--line));
 }
 
@@ -1590,12 +1637,13 @@ article.longform li {
   height: 0.88rem;
 }
 
-.reveal {
+/* Only hide when JS is running (the head script adds .js), so content never depends on the observer. */
+.js .reveal {
   opacity: 0;
   transform: translateY(7px);
 }
 
-.reveal.is-visible {
+.js .reveal.is-visible {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -1607,17 +1655,68 @@ article.longform li {
   }
 
   header.site-header {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.9rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.1rem;
+    padding: 0.7rem 0 0;
+  }
+
+  .brand {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .header-tools {
+    grid-column: 2;
+    grid-row: 1;
+    gap: 0.25rem;
   }
 
   nav.primary-nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
     justify-content: flex-start;
+    gap: 0 1.1rem;
+  }
+
+  /* Taller hit areas for touch; the active marker moves to an underline so padding does not push it away. */
+  nav.primary-nav a {
+    padding: 0.7rem 0;
+    border-bottom: 0;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.35em;
+  }
+
+  nav.primary-nav a.is-active {
+    text-decoration-color: var(--mark);
+  }
+
+  .site-search-trigger {
+    width: 2.75rem;
+    height: 2.75rem;
+    justify-content: center;
   }
 
   .site-search-trigger span,
   .site-search-trigger kbd {
     display: none;
+  }
+
+  .theme-toggle {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .icon-link {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .wip-notice {
+    margin-top: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
   }
 
   main {
@@ -1643,8 +1742,34 @@ article.longform li {
     justify-self: stretch;
     width: 100%;
     position: static;
-    padding: 0 0 1rem;
+    padding: 0;
     border-bottom: 1px solid var(--line);
+  }
+
+  .article-toc-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.75rem 0;
+    cursor: pointer;
+  }
+
+  .article-toc-title::before {
+    content: "▸";
+    transition: transform 0.15s ease;
+  }
+
+  .article-toc details[open] > .article-toc-title::before {
+    transform: rotate(90deg);
+  }
+
+  .article-toc details[open] nav {
+    padding-bottom: 1rem;
+  }
+
+  .article-copy-main {
+    min-height: 2.75rem;
   }
 
   .article-heading-row {
@@ -1735,20 +1860,8 @@ article.longform li {
 
 @media (max-width: 380px) {
   nav.primary-nav {
-    gap: 0.48rem;
-    font-size: 0.75rem;
+    column-gap: 0.8rem;
   }
-
-  .theme-toggle {
-    width: 1.62rem;
-    height: 1.62rem;
-  }
-
-  .theme-toggle svg {
-    width: 0.82rem;
-    height: 0.82rem;
-  }
-
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1760,7 +1873,7 @@ article.longform li {
     scroll-behavior: auto !important;
   }
 
-  .reveal {
+  .js .reveal {
     opacity: 1;
     transform: none;
   }
