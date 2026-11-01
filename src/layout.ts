@@ -102,8 +102,8 @@ const renderFooter = (): string => `
         </div>
         <nav class="footer-links" aria-label="Footer">
           <a class="icon-link" href="mailto:khanh.techbk@gmail.com" aria-label="Email">${EMAIL_ICON}</a>
-          <a class="icon-link" href="https://github.com/khankaholic" aria-label="GitHub">${GITHUB_ICON}</a>
-          <a class="icon-link" href="https://www.linkedin.com/in/khanh-techbk" aria-label="LinkedIn">${LINKEDIN_ICON}</a>
+          <a class="icon-link" href="https://github.com/khankaholic" target="_blank" rel="noopener noreferrer" aria-label="GitHub (opens in a new tab)">${GITHUB_ICON}</a>
+          <a class="icon-link" href="https://www.linkedin.com/in/khanh-techbk" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn (opens in a new tab)">${LINKEDIN_ICON}</a>
         </nav>
       </footer>`;
 
