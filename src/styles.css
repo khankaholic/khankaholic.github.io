@@ -1293,6 +1293,7 @@ article.longform {
   transform: translate(1px, -1px);
 }
 
+.visually-hidden,
 .article-copy-status {
   position: absolute;
   width: 1px;
